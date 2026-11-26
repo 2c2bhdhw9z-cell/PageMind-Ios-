@@ -1,0 +1,54 @@
+name: Build unsigned .ipa
+
+# Produces an UNSIGNED .ipa for sideloading. No Apple Developer account,
+# no provisioning profile, no certificates are needed or used here.
+# The user re-signs the .ipa with their own sideload tool.
+# TestFlight / App Store signing is a separate step, added only after
+# Apple Developer is bought.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  ipa:
+    name: Archive + package unsigned .ipa
+    runs-on: macos-26
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        run: |
+          XCODE_APP=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort | tail -1)
+          if [ -n "$XCODE_APP" ]; then
+            sudo xcode-select -s "$XCODE_APP"
+          fi
+          xcodebuild -version
+
+      - name: Archive (no signing)
+        run: |
+          xcodebuild -project PageMind.xcodeproj \
+            -scheme PageMind \
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
+            -archivePath build/PageMind.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package unsigned .ipa
+        run: |
+          mkdir -p build/Payload
+          cp -r build/PageMind.xcarchive/Products/Applications/PageMind.app build/Payload/
+          cd build
+          zip -qry PageMind-unsigned.ipa Payload
+          ls -lh PageMind-unsigned.ipa
+          unzip -l PageMind-unsigned.ipa | head -20
+
+      - name: Upload .ipa artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PageMind-unsigned-ipa
+          path: build/PageMind-unsigned.ipa
+          retention-days: 30

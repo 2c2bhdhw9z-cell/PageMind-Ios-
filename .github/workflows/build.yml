@@ -1,0 +1,54 @@
+name: Build
+
+# Manual-only on purpose (2026-11-26): the user does not want every push
+# burning macOS runner minutes. Run it from Actions > Build > Run workflow.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (unsigned)
+    runs-on: macos-26
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        run: |
+          ls /Applications/ | grep -E '^Xcode' || true
+          XCODE_APP=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort | tail -1)
+          if [ -n "$XCODE_APP" ]; then
+            sudo xcode-select -s "$XCODE_APP"
+          fi
+          xcodebuild -version
+
+      - name: SwiftLint (best-effort, never fails the build)
+        run: |
+          if command -v swiftlint >/dev/null 2>&1; then
+            swiftlint --strict || echo "SwiftLint reported issues (non-blocking in v1)."
+          else
+            echo "SwiftLint not installed on this runner — skipping."
+          fi
+
+      - name: Build for testing (no signing)
+        run: |
+          xcodebuild -project PageMind.xcodeproj \
+            -scheme PageMind \
+            -destination 'generic/platform=iOS' \
+            -configuration Debug \
+            build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      # Unit tests (PageMindTests target, shared PageMind scheme).
+      # Runs on a simulator; the first runner run may need the simulator
+      # name adjusted if the runner image ships a different device set.
+      - name: Run unit tests (no signing)
+        run: |
+          xcodebuild -project PageMind.xcodeproj \
+            -scheme PageMind \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
+            -configuration Debug \
+            test \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=""
