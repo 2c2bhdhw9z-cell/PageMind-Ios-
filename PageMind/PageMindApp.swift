@@ -1,6 +1,18 @@
 import SwiftUI
 import SwiftData
 
+/// Whether the App Group container is actually available to this build.
+/// SwiftData fatally crashes inside ModelContainer init (instead of
+/// throwing) when the group identifier has no entitlement, so callers
+/// must check this BEFORE passing groupContainer: .identifier(...).
+/// Unsigned CI / sideloaded builds have no entitlement and return nil.
+enum AppGroup {
+    static let identifier = "group.com.pagemind.app"
+    static var isAvailable: Bool {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier) != nil
+    }
+}
+
 @main
 struct PageMindApp: App {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
@@ -12,17 +24,25 @@ struct PageMindApp: App {
             SavedPage.self,
             CollectionModel.self,
         ])
-        let modelConfiguration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false,
-            groupContainer: .identifier("group.com.pagemind.app")
-        )
+        if AppGroup.isAvailable {
+            let modelConfiguration = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                groupContainer: .identifier(AppGroup.identifier)
+            )
+            if let container = try? ModelContainer(for: schema, configurations: [modelConfiguration]) {
+                return container
+            }
+        }
+        // No App Group entitlement (CI / unsigned / sideloaded): local
+        // on-disk store, then in-memory as a last resort. Data persists
+        // per install but is not shared with extensions/widgets yet.
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(
+                for: schema,
+                configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)]
+            )
         } catch {
-            // STUB: Fallback to an in-memory container if the shared
-            // App Group container cannot be created (e.g. group not
-            // provisioned yet). Data will not persist in that case.
             do {
                 return try ModelContainer(
                     for: schema,
