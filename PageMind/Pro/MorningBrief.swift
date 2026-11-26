@@ -104,6 +104,16 @@ enum MorningBriefGenerator {
     }
 }
 
+/// A Sendable box for carrying one non-Sendable value into a Task.
+/// Used for BGAppRefreshTask: its setTaskCompleted is thread-safe by
+/// Apple's contract, and the task is only ever completed once, so there
+/// is no real race — but the compiler needs the explicit Sendable box
+/// because a Task closure may not capture the non-Sendable task directly.
+private final class SendableBox<T>: @unchecked Sendable {
+    let value: T
+    init(_ value: T) { self.value = value }
+}
+
 /// Background scheduling for the Morning Brief.
 ///
 /// This is local, on-device scheduling: a BGAppRefreshTask registered
@@ -129,13 +139,12 @@ enum MorningBriefScheduler {
             }
             // Reschedule first, so a failure still leaves tomorrow's brief queued.
             Task { @MainActor in scheduleNext() }
-            // @MainActor so the Task closure may capture refreshTask: a plain
-            // Task closure is @Sendable and may not capture the non-Sendable
-            // BGAppRefreshTask, but a MainActor-isolated closure confines
-            // the capture to the main actor.
-            Task { @MainActor in
+            // The Task closure is @Sendable and may not capture the
+            // non-Sendable BGAppRefreshTask directly; carry it in a box.
+            let taskBox = SendableBox(refreshTask)
+            Task {
                 let success = await generateInBackground()
-                refreshTask.setTaskCompleted(success: success)
+                taskBox.value.setTaskCompleted(success: success)
             }
             refreshTask.expirationHandler = {
                 refreshTask.setTaskCompleted(success: false)
