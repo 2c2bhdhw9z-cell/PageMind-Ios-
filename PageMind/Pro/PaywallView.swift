@@ -30,7 +30,7 @@ struct PaywallView: View {
                     ForEach(features, id: \.1) { icon, title, detail in
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: icon)
-                                .foregroundStyle(.accent)
+                                .foregroundStyle(Color.accentColor)
                                 .frame(width: 24)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(title).font(.headline)
