@@ -1,6 +1,7 @@
 import BackgroundTasks
 import Foundation
 import SwiftData
+import SwiftUI
 import UserNotifications
 
 /// Morning Brief settings, persisted with @AppStorage.
