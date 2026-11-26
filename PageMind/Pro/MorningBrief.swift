@@ -198,6 +198,8 @@ enum MorningBriefScheduler {
     /// Loads recent saved pages for the background run. Uses the same
     /// App Group container as the app; falls back to no pages (not a
     /// crash) when the group is not provisioned yet.
+    /// @MainActor because ModelContainer.mainContext is MainActor-isolated.
+    @MainActor
     private static func loadRecentPages() -> [SavedPage] {
         let schema = Schema([SavedPage.self])
         let configuration = ModelConfiguration(
@@ -213,6 +215,8 @@ enum MorningBriefScheduler {
         return (try? container.mainContext.fetch(descriptor)) ?? []
     }
 
+    /// @MainActor because ModelContainer.mainContext is MainActor-isolated.
+    @MainActor
     private static func saveBriefAsNote(_ brief: String) -> Bool {
         let schema = Schema([SavedPage.self])
         let configuration = ModelConfiguration(
