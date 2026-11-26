@@ -43,6 +43,9 @@ jobs:
       # Unit tests (PageMindTests target, shared PageMind scheme).
       # Runs on a simulator; the first runner run may need the simulator
       # name adjusted if the runner image ships a different device set.
+      # ENABLE_TESTABILITY=YES: the earlier `build` step compiles the app
+      # module without -enable-testing, so @testable import PageMind in
+      # the tests fails unless the test action rebuilds it testable.
       - name: Run unit tests (no signing)
         run: |
           xcodebuild -project PageMind.xcodeproj \
@@ -51,4 +54,5 @@ jobs:
             -configuration Debug \
             test \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_IDENTITY=""
+            CODE_SIGN_IDENTITY="" \
+            ENABLE_TESTABILITY=YES
