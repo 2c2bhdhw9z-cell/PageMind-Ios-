@@ -1,0 +1,1 @@
+{"action":{"default_popup":"popup.html","default_title":"PageMind"},"background":{"scripts":["background.js"],"type":"module"},"content_scripts":[{"js":["content.js"],"matches":["<all_urls>"],"run_at":"document_idle"}],"description":"Save any page to PageMind and ask questions about it.","manifest_version":3,"name":"PageMind","permissions":["activeTab","storage"],"version":"1.0"}

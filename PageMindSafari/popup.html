@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PageMind</title>
+<style>
+  body { font-family: -apple-system, sans-serif; width: 280px; padding: 12px; margin: 0; }
+  h1 { font-size: 16px; margin: 0 0 8px; }
+  p { font-size: 13px; color: #555; margin: 0 0 12px; }
+  button { width: 100%; padding: 8px; font-size: 14px; border: none; border-radius: 8px;
+           background: #007aff; color: #fff; cursor: pointer; }
+  button.secondary { background: #eee; color: #111; margin-top: 8px; }
+  #status { font-size: 12px; color: #888; margin-top: 10px; }
+</style>
+</head>
+<body>
+<h1>PageMind</h1>
+<p>Save this page to your PageMind library, then ask questions about it in the app.</p>
+<button id="save">Save this page</button>
+<button id="open" class="secondary">Open PageMind app</button>
+<div id="status"></div>
+<script src="popup.js"></script>
+</body>
+</html>
