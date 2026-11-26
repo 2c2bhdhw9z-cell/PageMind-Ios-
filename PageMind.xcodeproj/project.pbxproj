@@ -1,0 +1,1400 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+		A806FB4265A925EF09187A30 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "AIProvider.swift";
+			path = "PageMind/AI/AIProvider.swift";
+			sourceTree = "<group>";
+		};
+		966F25583A9BA2F2EF6DBB70 = {
+			isa = PBXBuildFile;
+			fileRef = A806FB4265A925EF09187A30;
+		};
+		4DBF6552B02E39008A10FD9C = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ChatViewModel.swift";
+			path = "PageMind/AI/ChatViewModel.swift";
+			sourceTree = "<group>";
+		};
+		681FE32173A18647B18492EC = {
+			isa = PBXBuildFile;
+			fileRef = 4DBF6552B02E39008A10FD9C;
+		};
+		A5733FC594033CB1582733F9 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ModelCatalog.swift";
+			path = "PageMind/AI/ModelCatalog.swift";
+			sourceTree = "<group>";
+		};
+		97BD83D5EF026D17FD6FC750 = {
+			isa = PBXBuildFile;
+			fileRef = A5733FC594033CB1582733F9;
+		};
+		7514DAB9C611C9FBDA93BB68 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "OpenAICompatibleClient.swift";
+			path = "PageMind/AI/OpenAICompatibleClient.swift";
+			sourceTree = "<group>";
+		};
+		6D2A476A1948A225FD627CBD = {
+			isa = PBXBuildFile;
+			fileRef = 7514DAB9C611C9FBDA93BB68;
+		};
+		8BFC55F1EB41BF00E61033F4 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "Providers.swift";
+			path = "PageMind/AI/Providers.swift";
+			sourceTree = "<group>";
+		};
+		E7817839685DD7B21BEEE4E9 = {
+			isa = PBXBuildFile;
+			fileRef = 8BFC55F1EB41BF00E61033F4;
+		};
+		EC3EF8BDA8D56E3D985A80C9 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "AppSettings.swift";
+			path = "PageMind/Data/AppSettings.swift";
+			sourceTree = "<group>";
+		};
+		58D32C1EED55397EFB6971ED = {
+			isa = PBXBuildFile;
+			fileRef = EC3EF8BDA8D56E3D985A80C9;
+		};
+		A67CD27C5FE3FA760BA90A3C = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "KeychainStore.swift";
+			path = "PageMind/Data/KeychainStore.swift";
+			sourceTree = "<group>";
+		};
+		5983A8F78D91C1F5DBBECDF2 = {
+			isa = PBXBuildFile;
+			fileRef = A67CD27C5FE3FA760BA90A3C;
+		};
+		646EFD5C0BD66BEA11920DC1 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "PendingPageImporter.swift";
+			path = "PageMind/Data/PendingPageImporter.swift";
+			sourceTree = "<group>";
+		};
+		48CE8C26C1A0DDB7928075B1 = {
+			isa = PBXBuildFile;
+			fileRef = 646EFD5C0BD66BEA11920DC1;
+		};
+		9EB90E995DFCD60A790CF68E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "WebMemorySearch.swift";
+			path = "PageMind/Data/WebMemorySearch.swift";
+			sourceTree = "<group>";
+		};
+		1B001EAB159284533B57B0BD = {
+			isa = PBXBuildFile;
+			fileRef = 9EB90E995DFCD60A790CF68E;
+		};
+		8B8BBD2CB6487162244E62DB = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "Models.swift";
+			path = "PageMind/Models.swift";
+			sourceTree = "<group>";
+		};
+		87A64482A3F324F52A903795 = {
+			isa = PBXBuildFile;
+			fileRef = 8B8BBD2CB6487162244E62DB;
+		};
+		2A005E007A3A72058DAD86B7 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "PDFChat.swift";
+			path = "PageMind/PDF/PDFChat.swift";
+			sourceTree = "<group>";
+		};
+		23B7596852495D73AA1BAB39 = {
+			isa = PBXBuildFile;
+			fileRef = 2A005E007A3A72058DAD86B7;
+		};
+		9759195ADA142C878844749A = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "PageMindApp.swift";
+			path = "PageMind/PageMindApp.swift";
+			sourceTree = "<group>";
+		};
+		60D15ABD4196284461779249 = {
+			isa = PBXBuildFile;
+			fileRef = 9759195ADA142C878844749A;
+		};
+		0D61F4D7FC7B021397CF32A1 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "PaywallView.swift";
+			path = "PageMind/Pro/PaywallView.swift";
+			sourceTree = "<group>";
+		};
+		DDA3F45CD688C77D614182CC = {
+			isa = PBXBuildFile;
+			fileRef = 0D61F4D7FC7B021397CF32A1;
+		};
+		33A818B3A199A2CF3925BF79 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ProFeatures.swift";
+			path = "PageMind/Pro/ProFeatures.swift";
+			sourceTree = "<group>";
+		};
+		EB98D86CD8A6D73F54017DE0 = {
+			isa = PBXBuildFile;
+			fileRef = 33A818B3A199A2CF3925BF79;
+		};
+		AE22371C63BCE155362DFE9A = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "StoreManager.swift";
+			path = "PageMind/Pro/StoreManager.swift";
+			sourceTree = "<group>";
+		};
+		12FE94692D0FF98ECAC3F30C = {
+			isa = PBXBuildFile;
+			fileRef = AE22371C63BCE155362DFE9A;
+		};
+		D04F3E5FDBDD56A7990C1468 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ReaderExtractor.swift";
+			path = "PageMind/Reader/ReaderExtractor.swift";
+			sourceTree = "<group>";
+		};
+		3DADBDD1D51817333E62A7C6 = {
+			isa = PBXBuildFile;
+			fileRef = D04F3E5FDBDD56A7990C1468;
+		};
+		7B851B869C80FACDBF3B541D = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "WebSearch.swift";
+			path = "PageMind/Search/WebSearch.swift";
+			sourceTree = "<group>";
+		};
+		5C6CF9661D7790BFE8FDEFE0 = {
+			isa = PBXBuildFile;
+			fileRef = 7B851B869C80FACDBF3B541D;
+		};
+		5A9CC69C573B879BBCA4719C = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "BrowserView.swift";
+			path = "PageMind/Views/BrowserView.swift";
+			sourceTree = "<group>";
+		};
+		0632F2FEE50DF8A9D396CAA9 = {
+			isa = PBXBuildFile;
+			fileRef = 5A9CC69C573B879BBCA4719C;
+		};
+		B73CAFE402A2438BFA069EC9 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ChatView.swift";
+			path = "PageMind/Views/ChatView.swift";
+			sourceTree = "<group>";
+		};
+		42819706FD52EAC0884A21BA = {
+			isa = PBXBuildFile;
+			fileRef = B73CAFE402A2438BFA069EC9;
+		};
+		32CB5E6C47E0D12E7854E7AA = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "HighlightToolbar.swift";
+			path = "PageMind/Views/HighlightToolbar.swift";
+			sourceTree = "<group>";
+		};
+		1359C6AE6899A1AFA06BAD15 = {
+			isa = PBXBuildFile;
+			fileRef = 32CB5E6C47E0D12E7854E7AA;
+		};
+		4E726524F53D0416D7DBFF97 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "LibraryView.swift";
+			path = "PageMind/Views/LibraryView.swift";
+			sourceTree = "<group>";
+		};
+		00C2155187A717622C2EFDE0 = {
+			isa = PBXBuildFile;
+			fileRef = 4E726524F53D0416D7DBFF97;
+		};
+		CD536919616BE464027386A7 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "OnboardingView.swift";
+			path = "PageMind/Views/OnboardingView.swift";
+			sourceTree = "<group>";
+		};
+		265DE53C79D49716EECC3FA7 = {
+			isa = PBXBuildFile;
+			fileRef = CD536919616BE464027386A7;
+		};
+		33D42ECBF3E65AD5649C0E5A = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "SettingsView.swift";
+			path = "PageMind/Views/SettingsView.swift";
+			sourceTree = "<group>";
+		};
+		042C62E956F23E526DF105B1 = {
+			isa = PBXBuildFile;
+			fileRef = 33D42ECBF3E65AD5649C0E5A;
+		};
+		34D48E0780AE1E8B7361F58D = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			name = "Assets.xcassets";
+			path = "PageMind/Assets.xcassets";
+			sourceTree = "<group>";
+		};
+		A81304492FF1EE1717AD3FE2 = {
+			isa = PBXBuildFile;
+			fileRef = 34D48E0780AE1E8B7361F58D;
+		};
+		B2FD511F7F08702488C934D5 = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			name = "PrivacyInfo.xcprivacy";
+			path = "PageMind/PrivacyInfo.xcprivacy";
+			sourceTree = "<group>";
+		};
+		F57F2D48331A31AF03D4A706 = {
+			isa = PBXBuildFile;
+			fileRef = B2FD511F7F08702488C934D5;
+		};
+		0DC5695A3DD5D51400BC4B6D = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			name = "Info.plist";
+			path = "PageMind/Info.plist";
+			sourceTree = "<group>";
+		};
+		1048F177C44E3CE41C0C40CF = {
+			isa = PBXBuildFile;
+			fileRef = 0DC5695A3DD5D51400BC4B6D;
+		};
+		716CF5724B8A20F9A0C04967 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ShareViewController.swift";
+			path = "PageMindShare/ShareViewController.swift";
+			sourceTree = "<group>";
+		};
+		444DD321B1887A54CA146D4F = {
+			isa = PBXBuildFile;
+			fileRef = 716CF5724B8A20F9A0C04967;
+		};
+		14EF7E8BC1433928A7D373DB = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			name = "Info.plist";
+			path = "PageMindShare/Info.plist";
+			sourceTree = "<group>";
+		};
+		7B4DD12948B0751D292537AF = {
+			isa = PBXBuildFile;
+			fileRef = 14EF7E8BC1433928A7D373DB;
+		};
+		F4312BA3F973D555D01C85BA = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "SafariWebExtensionHandler.swift";
+			path = "PageMindSafari/SafariWebExtensionHandler.swift";
+			sourceTree = "<group>";
+		};
+		12530181DD98150199A8619B = {
+			isa = PBXBuildFile;
+			fileRef = F4312BA3F973D555D01C85BA;
+		};
+		5ACE727597B3B6E2A01454B5 = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			name = "manifest.json";
+			path = "PageMindSafari/manifest.json";
+			sourceTree = "<group>";
+		};
+		5DDEB78782D0A37D9F6F5553 = {
+			isa = PBXBuildFile;
+			fileRef = 5ACE727597B3B6E2A01454B5;
+		};
+		FD14D8249E36F78BDA952885 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.javascript;
+			name = "content.js";
+			path = "PageMindSafari/content.js";
+			sourceTree = "<group>";
+		};
+		695159066B677515AF57DB6C = {
+			isa = PBXBuildFile;
+			fileRef = FD14D8249E36F78BDA952885;
+		};
+		51DB3411398C7251745917F0 = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.html;
+			name = "popup.html";
+			path = "PageMindSafari/popup.html";
+			sourceTree = "<group>";
+		};
+		0A443655CB2113D1A501C28C = {
+			isa = PBXBuildFile;
+			fileRef = 51DB3411398C7251745917F0;
+		};
+		140171F4889BACD7D0720C45 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.javascript;
+			name = "popup.js";
+			path = "PageMindSafari/popup.js";
+			sourceTree = "<group>";
+		};
+		8692CDA8B6FB9B43EAEA1633 = {
+			isa = PBXBuildFile;
+			fileRef = 140171F4889BACD7D0720C45;
+		};
+		8F57235E8A0EADBC778D0781 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.javascript;
+			name = "background.js";
+			path = "PageMindSafari/background.js";
+			sourceTree = "<group>";
+		};
+		26AF18173D8B938BB53A5506 = {
+			isa = PBXBuildFile;
+			fileRef = 8F57235E8A0EADBC778D0781;
+		};
+		C05A4DAC0955D47409B9E75E = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			name = "Info.plist";
+			path = "PageMindSafari/Info.plist";
+			sourceTree = "<group>";
+		};
+		5A5A63BA2327E99753865CCF = {
+			isa = PBXBuildFile;
+			fileRef = C05A4DAC0955D47409B9E75E;
+		};
+		88ACC35221CFE55DEFB508AF = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "PageMindWidgets.swift";
+			path = "PageMindWidgets/PageMindWidgets.swift";
+			sourceTree = "<group>";
+		};
+		2A71660D4D6634C073E596CE = {
+			isa = PBXBuildFile;
+			fileRef = 88ACC35221CFE55DEFB508AF;
+		};
+		E1BB37E54AD0E93E5B42DCA8 = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			name = "Info.plist";
+			path = "PageMindWidgets/Info.plist";
+			sourceTree = "<group>";
+		};
+		337428A375DD00173AA69849 = {
+			isa = PBXBuildFile;
+			fileRef = E1BB37E54AD0E93E5B42DCA8;
+		};
+		03DD7564F706B9B26191E639 = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = "PageMind.app";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		850A551FE1B2CC53AF683C65 = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.app-extension;
+			includeInIndex = 0;
+			path = "PageMindShare.appex";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		EDF745B3901E2FF1E0C5DF9B = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.app-extension;
+			includeInIndex = 0;
+			path = "PageMindSafari.appex";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D8C95C3F83AB130F12289624 = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.app-extension;
+			includeInIndex = 0;
+			path = "PageMindWidgets.appex";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		DB613A43F424A1A5CE93F0BB = {
+			isa = PBXGroup;
+			children = (
+							A65D9F33BFACBB70A8EE8276,
+							A9F391F0DCF3B0C5C8671866,
+							A806FB4265A925EF09187A30,
+							4DBF6552B02E39008A10FD9C,
+							A5733FC594033CB1582733F9,
+							7514DAB9C611C9FBDA93BB68,
+							8BFC55F1EB41BF00E61033F4,
+			);
+			name = "AI";
+			sourceTree = "<group>";
+		};
+		918D3536962C43E2FEDD9C95 = {
+			isa = PBXGroup;
+			children = (
+							118270E9C767358B43869137,
+							EC3EF8BDA8D56E3D985A80C9,
+							A67CD27C5FE3FA760BA90A3C,
+							646EFD5C0BD66BEA11920DC1,
+							9EB90E995DFCD60A790CF68E,
+			);
+			name = "Data";
+			sourceTree = "<group>";
+		};
+		F2699434CD1A448073D84138 = {
+			isa = PBXGroup;
+			children = (
+							2A005E007A3A72058DAD86B7,
+			);
+			name = "PDF";
+			sourceTree = "<group>";
+		};
+		DB20E61D268BFF3B60E24EEF = {
+			isa = PBXGroup;
+			children = (
+							3494AAE050C7757E66A251E1,
+							CE5A2F47A669EF04E4CC30DE,
+							E4521E17E77B10E8F967FFDA,
+							0912E2A58D6062CDBF2639CE,
+							0D61F4D7FC7B021397CF32A1,
+							33A818B3A199A2CF3925BF79,
+							AE22371C63BCE155362DFE9A,
+			);
+			name = "Pro";
+			sourceTree = "<group>";
+		};
+		827A9C54B55EE5194C2C08D5 = {
+			isa = PBXGroup;
+			children = (
+							D04F3E5FDBDD56A7990C1468,
+			);
+			name = "Reader";
+			sourceTree = "<group>";
+		};
+		976A05511C431354D1AD78B2 = {
+			isa = PBXGroup;
+			children = (
+							EB3C7656D03CA66983300EA9,
+							7B851B869C80FACDBF3B541D,
+			);
+			name = "Search";
+			sourceTree = "<group>";
+		};
+		16903079A336DDB832B71259 = {
+			isa = PBXGroup;
+			children = (
+							5A9CC69C573B879BBCA4719C,
+							B73CAFE402A2438BFA069EC9,
+							32CB5E6C47E0D12E7854E7AA,
+							4E726524F53D0416D7DBFF97,
+							CD536919616BE464027386A7,
+							33D42ECBF3E65AD5649C0E5A,
+			);
+			name = "Views";
+			sourceTree = "<group>";
+		};
+		C4D3D396201010FCE58E517D = {
+			isa = PBXGroup;
+			children = (
+							716CF5724B8A20F9A0C04967,
+							14EF7E8BC1433928A7D373DB,
+			);
+			name = "PageMindShare";
+			sourceTree = "<group>";
+		};
+		708AA2E3A7E2A81D24C8CE05 = {
+			isa = PBXGroup;
+			children = (
+							F4312BA3F973D555D01C85BA,
+							5ACE727597B3B6E2A01454B5,
+							FD14D8249E36F78BDA952885,
+							51DB3411398C7251745917F0,
+							140171F4889BACD7D0720C45,
+							8F57235E8A0EADBC778D0781,
+							C05A4DAC0955D47409B9E75E,
+			);
+			name = "PageMindSafari";
+			sourceTree = "<group>";
+		};
+		5041748161F761242C0B3EAE = {
+			isa = PBXGroup;
+			children = (
+							88ACC35221CFE55DEFB508AF,
+							E1BB37E54AD0E93E5B42DCA8,
+			);
+			name = "PageMindWidgets";
+			sourceTree = "<group>";
+		};
+		9481048D7A63E8531FD9BEA1 = {
+			isa = PBXGroup;
+			children = (
+							DB613A43F424A1A5CE93F0BB,
+							918D3536962C43E2FEDD9C95,
+							F2699434CD1A448073D84138,
+							DB20E61D268BFF3B60E24EEF,
+							827A9C54B55EE5194C2C08D5,
+							976A05511C431354D1AD78B2,
+							16903079A336DDB832B71259,
+							8B8BBD2CB6487162244E62DB,
+							9759195ADA142C878844749A,
+							34D48E0780AE1E8B7361F58D,
+							B2FD511F7F08702488C934D5,
+							0DC5695A3DD5D51400BC4B6D,
+			);
+			name = PageMind;
+			sourceTree = "<group>";
+		};
+		2F3A6B1E78F896718625FF06 = {
+			isa = PBXGroup;
+			children = (
+							4CA33E3ED5EDC58E3C92C051,
+							03DD7564F706B9B26191E639,
+							850A551FE1B2CC53AF683C65,
+							EDF745B3901E2FF1E0C5DF9B,
+							D8C95C3F83AB130F12289624,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		518DA81DB9B99529C0C0AEBE = {
+			isa = PBXGroup;
+			children = (
+							D348B7A72EADFFA6869D851B,
+							9481048D7A63E8531FD9BEA1,
+							C4D3D396201010FCE58E517D,
+							708AA2E3A7E2A81D24C8CE05,
+							5041748161F761242C0B3EAE,
+							2F3A6B1E78F896718625FF06,
+			);
+			sourceTree = "<group>";
+		};
+		4A43692AD8BCEEB8B727C85B = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							ALWAYS_SEARCH_USER_PATHS = NO;
+							CLANG_ENABLE_MODULES = YES;
+							CODE_SIGNING_ALLOWED = NO;
+							CURRENT_PROJECT_VERSION = 1;
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							MARKETING_VERSION = 1.0;
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		C28449456A5A705A7479770B = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							ALWAYS_SEARCH_USER_PATHS = NO;
+							CLANG_ENABLE_MODULES = YES;
+							CODE_SIGNING_ALLOWED = NO;
+							CURRENT_PROJECT_VERSION = 1;
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							MARKETING_VERSION = 1.0;
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		1F4E3D13C2320EDA50221924 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+							4A43692AD8BCEEB8B727C85B,
+							C28449456A5A705A7479770B,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		20A028B99914601FA780E937 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+							C2A26EFB7A0448488AE2BFE6,
+							63792DB626D1D337E18D3E59,
+							6686C251B210BD48AAEE2C00,
+							09F5148EA225CF0233AF616D,
+							5B8E19F9DA9AC02DC92C0C48,
+							6852580B4A7062DC65199C91,
+							1865AF8F6ED29761044B3144,
+							3B1C63C52948BC388E4D19FE,
+							966F25583A9BA2F2EF6DBB70,
+							681FE32173A18647B18492EC,
+							97BD83D5EF026D17FD6FC750,
+							6D2A476A1948A225FD627CBD,
+							E7817839685DD7B21BEEE4E9,
+							58D32C1EED55397EFB6971ED,
+							5983A8F78D91C1F5DBBECDF2,
+							48CE8C26C1A0DDB7928075B1,
+							1B001EAB159284533B57B0BD,
+							87A64482A3F324F52A903795,
+							23B7596852495D73AA1BAB39,
+							60D15ABD4196284461779249,
+							DDA3F45CD688C77D614182CC,
+							EB98D86CD8A6D73F54017DE0,
+							12FE94692D0FF98ECAC3F30C,
+							3DADBDD1D51817333E62A7C6,
+							5C6CF9661D7790BFE8FDEFE0,
+							0632F2FEE50DF8A9D396CAA9,
+							42819706FD52EAC0884A21BA,
+							1359C6AE6899A1AFA06BAD15,
+							00C2155187A717622C2EFDE0,
+							265DE53C79D49716EECC3FA7,
+							042C62E956F23E526DF105B1,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		955F14CA9E01CC7DD9325341 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B8BB5281012E3706CA8C1A82 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+							A81304492FF1EE1717AD3FE2,
+							F57F2D48331A31AF03D4A706,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		20B1387F3F4855BD125FECDE = {
+			isa = PBXBuildFile;
+			fileRef = 850A551FE1B2CC53AF683C65;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, );};
+		};
+		AC61CEFA04ABF1222C772497 = {
+			isa = PBXBuildFile;
+			fileRef = EDF745B3901E2FF1E0C5DF9B;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, );};
+		};
+		6C2F2002F3F27DF080C8A74D = {
+			isa = PBXBuildFile;
+			fileRef = D8C95C3F83AB130F12289624;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, );};
+		};
+		05F6879A29C6DA47283662EE = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+							20B1387F3F4855BD125FECDE,
+							AC61CEFA04ABF1222C772497,
+							6C2F2002F3F27DF080C8A74D,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1D26511D8310F31542F6FDB2 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+							ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+							CODE_SIGNING_ALLOWED = NO;
+							CODE_SIGN_IDENTITY = ;
+							CODE_SIGN_STYLE = Manual;
+							CURRENT_PROJECT_VERSION = 1;
+							GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1 $(inherited)";
+							GENERATE_INFOPLIST_FILE = NO;
+							INFOPLIST_FILE = PageMind/Info.plist;
+							INSTALL_PATH = $(LOCAL_APPS_DIR);
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+							MARKETING_VERSION = 1.0;
+							PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app;
+							PRODUCT_NAME = "$(TARGET_NAME)";
+							SDKROOT = iphoneos;
+							SKIP_INSTALL = NO;
+							SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+							SWIFT_EMBED_LIBRARIES_WITH_INSTALL = YES;
+							SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		9C0295BE61AED9BB03B056D5 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+							ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+							CODE_SIGNING_ALLOWED = NO;
+							CODE_SIGN_IDENTITY = ;
+							CODE_SIGN_STYLE = Manual;
+							CURRENT_PROJECT_VERSION = 1;
+							GENERATE_INFOPLIST_FILE = NO;
+							INFOPLIST_FILE = PageMind/Info.plist;
+							INSTALL_PATH = $(LOCAL_APPS_DIR);
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+							MARKETING_VERSION = 1.0;
+							PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app;
+							PRODUCT_NAME = "$(TARGET_NAME)";
+							SDKROOT = iphoneos;
+							SKIP_INSTALL = NO;
+							SWIFT_EMBED_LIBRARIES_WITH_INSTALL = YES;
+							SWIFT_OPTIMIZATION_LEVEL = "-O";
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		472D4AC24E53480563B52E6E = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+							1D26511D8310F31542F6FDB2,
+							9C0295BE61AED9BB03B056D5,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EB18692CB7C2E0F63C9C068F = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 472D4AC24E53480563B52E6E;
+			buildPhases = (
+							20A028B99914601FA780E937,
+							955F14CA9E01CC7DD9325341,
+							B8BB5281012E3706CA8C1A82,
+							05F6879A29C6DA47283662EE,
+			);
+			buildRules = (
+			);
+			dependencies = (
+							C99EBDDBB6B79A46DC86E7FB,
+							B1F96AAF861ED2A2D62E7FD8,
+							524A5D64A6117886EE51386F,
+			);
+			name = PageMind;
+			productName = PageMind;
+			productReference = 03DD7564F706B9B26191E639;
+			productType = "com.apple.product-type.application";
+		};
+		A193529ADBFFF63F802AD51E = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+							444DD321B1887A54CA146D4F,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47C97ECFB5605DA5155EE4E7 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC302FBCAF8F974500580DFD = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							APPLICATION_EXTENSION_API_ONLY = YES;
+							CODE_SIGNING_ALLOWED = NO;
+							CODE_SIGN_IDENTITY = ;
+							CODE_SIGN_STYLE = Manual;
+							CURRENT_PROJECT_VERSION = 1;
+							GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1 $(inherited)";
+							GENERATE_INFOPLIST_FILE = NO;
+							INFOPLIST_FILE = PageMindShare/Info.plist;
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+							MARKETING_VERSION = 1.0;
+							PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app.share;
+							PRODUCT_NAME = "$(TARGET_NAME)";
+							SDKROOT = iphoneos;
+							SKIP_INSTALL = YES;
+							SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+							SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		B441E5BFEAFF4AFE7FE0F7B7 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							APPLICATION_EXTENSION_API_ONLY = YES;
+							CODE_SIGNING_ALLOWED = NO;
+							CODE_SIGN_IDENTITY = ;
+							CODE_SIGN_STYLE = Manual;
+							CURRENT_PROJECT_VERSION = 1;
+							GENERATE_INFOPLIST_FILE = NO;
+							INFOPLIST_FILE = PageMindShare/Info.plist;
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+							MARKETING_VERSION = 1.0;
+							PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app.share;
+							PRODUCT_NAME = "$(TARGET_NAME)";
+							SDKROOT = iphoneos;
+							SKIP_INSTALL = YES;
+							SWIFT_OPTIMIZATION_LEVEL = "-O";
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		456D9DFE52935EE7E0B53EE7 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+							AC302FBCAF8F974500580DFD,
+							B441E5BFEAFF4AFE7FE0F7B7,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5C1BFBE68B3A42FC25FB3D3F = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 456D9DFE52935EE7E0B53EE7;
+			buildPhases = (
+							A193529ADBFFF63F802AD51E,
+							47C97ECFB5605DA5155EE4E7,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PageMindShare";
+			productName = "PageMindShare";
+			productReference = 850A551FE1B2CC53AF683C65;
+			productType = "com.apple.product-type.app-extension";
+		};
+		94AB484AB9B63CA6944CABDC = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+							12530181DD98150199A8619B,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A101513A4E3C6DEAEA4C4C59 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A23BCE29F651866494A2FF83 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+							5DDEB78782D0A37D9F6F5553,
+							695159066B677515AF57DB6C,
+							0A443655CB2113D1A501C28C,
+							8692CDA8B6FB9B43EAEA1633,
+							26AF18173D8B938BB53A5506,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95C7FF2EED3BB5D0E9585E03 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							APPLICATION_EXTENSION_API_ONLY = YES;
+							CODE_SIGNING_ALLOWED = NO;
+							CODE_SIGN_IDENTITY = ;
+							CODE_SIGN_STYLE = Manual;
+							CURRENT_PROJECT_VERSION = 1;
+							GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1 $(inherited)";
+							GENERATE_INFOPLIST_FILE = NO;
+							INFOPLIST_FILE = PageMindSafari/Info.plist;
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+							MARKETING_VERSION = 1.0;
+							PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app.safari;
+							PRODUCT_NAME = "$(TARGET_NAME)";
+							SDKROOT = iphoneos;
+							SKIP_INSTALL = YES;
+							SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+							SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		8E21923CE5CD513C1A62EA79 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							APPLICATION_EXTENSION_API_ONLY = YES;
+							CODE_SIGNING_ALLOWED = NO;
+							CODE_SIGN_IDENTITY = ;
+							CODE_SIGN_STYLE = Manual;
+							CURRENT_PROJECT_VERSION = 1;
+							GENERATE_INFOPLIST_FILE = NO;
+							INFOPLIST_FILE = PageMindSafari/Info.plist;
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+							MARKETING_VERSION = 1.0;
+							PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app.safari;
+							PRODUCT_NAME = "$(TARGET_NAME)";
+							SDKROOT = iphoneos;
+							SKIP_INSTALL = YES;
+							SWIFT_OPTIMIZATION_LEVEL = "-O";
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		352295707A8D92D7FD2E2A7C = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+							95C7FF2EED3BB5D0E9585E03,
+							8E21923CE5CD513C1A62EA79,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5CE7280FC9569C2ADB26F433 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 352295707A8D92D7FD2E2A7C;
+			buildPhases = (
+							94AB484AB9B63CA6944CABDC,
+							A101513A4E3C6DEAEA4C4C59,
+							A23BCE29F651866494A2FF83,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PageMindSafari";
+			productName = "PageMindSafari";
+			productReference = EDF745B3901E2FF1E0C5DF9B;
+			productType = "com.apple.product-type.app-extension";
+		};
+		CA9E172CE2E227E672F7DE87 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+							2A71660D4D6634C073E596CE,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6A9D84CB4079D040514A80FD = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		164ABAD0A08114D6C969B253 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							APPLICATION_EXTENSION_API_ONLY = YES;
+							CODE_SIGNING_ALLOWED = NO;
+							CODE_SIGN_IDENTITY = ;
+							CODE_SIGN_STYLE = Manual;
+							CURRENT_PROJECT_VERSION = 1;
+							GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1 $(inherited)";
+							GENERATE_INFOPLIST_FILE = NO;
+							INFOPLIST_FILE = PageMindWidgets/Info.plist;
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+							MARKETING_VERSION = 1.0;
+							PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app.widgets;
+							PRODUCT_NAME = "$(TARGET_NAME)";
+							SDKROOT = iphoneos;
+							SKIP_INSTALL = YES;
+							SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+							SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		E6EDE7ECBAFAD4DA5D7F1F5E = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+							APPLICATION_EXTENSION_API_ONLY = YES;
+							CODE_SIGNING_ALLOWED = NO;
+							CODE_SIGN_IDENTITY = ;
+							CODE_SIGN_STYLE = Manual;
+							CURRENT_PROJECT_VERSION = 1;
+							GENERATE_INFOPLIST_FILE = NO;
+							INFOPLIST_FILE = PageMindWidgets/Info.plist;
+							IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+							LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+							MARKETING_VERSION = 1.0;
+							PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app.widgets;
+							PRODUCT_NAME = "$(TARGET_NAME)";
+							SDKROOT = iphoneos;
+							SKIP_INSTALL = YES;
+							SWIFT_OPTIMIZATION_LEVEL = "-O";
+							SWIFT_VERSION = 6.0;
+							TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		29863B6EF068452762C05EBB = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+							164ABAD0A08114D6C969B253,
+							E6EDE7ECBAFAD4DA5D7F1F5E,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EA7D1542058ACA225ED7F0C7 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 29863B6EF068452762C05EBB;
+			buildPhases = (
+							CA9E172CE2E227E672F7DE87,
+							6A9D84CB4079D040514A80FD,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PageMindWidgets";
+			productName = "PageMindWidgets";
+			productReference = D8C95C3F83AB130F12289624;
+			productType = "com.apple.product-type.app-extension";
+		};
+		EB242F309C82A03C1C68B407 = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595;
+			proxyType = 1;
+			remoteGlobalIDString = 5C1BFBE68B3A42FC25FB3D3F;
+			remoteInfo = "PageMindShare";
+		};
+		C99EBDDBB6B79A46DC86E7FB = {
+			isa = PBXTargetDependency;
+			target = 5C1BFBE68B3A42FC25FB3D3F;
+			targetProxy = EB242F309C82A03C1C68B407;
+		};
+		20EF6D72F4AD7E59AD530C8C = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595;
+			proxyType = 1;
+			remoteGlobalIDString = 5CE7280FC9569C2ADB26F433;
+			remoteInfo = "PageMindSafari";
+		};
+		B1F96AAF861ED2A2D62E7FD8 = {
+			isa = PBXTargetDependency;
+			target = 5CE7280FC9569C2ADB26F433;
+			targetProxy = 20EF6D72F4AD7E59AD530C8C;
+		};
+		37293CA7B0455A41F46E3B9C = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595;
+			proxyType = 1;
+			remoteGlobalIDString = EA7D1542058ACA225ED7F0C7;
+			remoteInfo = "PageMindWidgets";
+		};
+		524A5D64A6117886EE51386F = {
+			isa = PBXTargetDependency;
+			target = EA7D1542058ACA225ED7F0C7;
+			targetProxy = 37293CA7B0455A41F46E3B9C;
+		};
+		46F86FAA6BBF9AC94A7E4595 = {
+			isa = PBXProject;
+			attributes = {
+			LastUpgradeCheck = 1600;
+			TargetAttributes = {
+					AC2CB227EB498056029A9B9A = { CreatedOnToolsVersion = 16.0; };
+							EB18692CB7C2E0F63C9C068F = { CreatedOnToolsVersion = 16.0; };
+							5C1BFBE68B3A42FC25FB3D3F = { CreatedOnToolsVersion = 16.0; };
+							5CE7280FC9569C2ADB26F433 = { CreatedOnToolsVersion = 16.0; };
+							EA7D1542058ACA225ED7F0C7 = { CreatedOnToolsVersion = 16.0; };
+			};
+			};
+			buildConfigurationList = 1F4E3D13C2320EDA50221924;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+			en,
+			Base,
+			);
+			mainGroup = 518DA81DB9B99529C0C0AEBE;
+			productRefGroup = 2F3A6B1E78F896718625FF06;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+					AC2CB227EB498056029A9B9A,
+							EB18692CB7C2E0F63C9C068F,
+							5C1BFBE68B3A42FC25FB3D3F,
+							5CE7280FC9569C2ADB26F433,
+							EA7D1542058ACA225ED7F0C7,
+			);
+		};
+		A65D9F33BFACBB70A8EE8276 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ChatCompletion.swift";
+			path = "PageMind/AI/ChatCompletion.swift";
+			sourceTree = "<group>";
+		};
+		C2A26EFB7A0448488AE2BFE6 = {
+			isa = PBXBuildFile;
+			fileRef = A65D9F33BFACBB70A8EE8276;
+		};
+		A9F391F0DCF3B0C5C8671866 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ImageChat.swift";
+			path = "PageMind/AI/ImageChat.swift";
+			sourceTree = "<group>";
+		};
+		63792DB626D1D337E18D3E59 = {
+			isa = PBXBuildFile;
+			fileRef = A9F391F0DCF3B0C5C8671866;
+		};
+		118270E9C767358B43869137 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "WidgetDataWriter.swift";
+			path = "PageMind/Data/WidgetDataWriter.swift";
+			sourceTree = "<group>";
+		};
+		6686C251B210BD48AAEE2C00 = {
+			isa = PBXBuildFile;
+			fileRef = 118270E9C767358B43869137;
+		};
+		3494AAE050C7757E66A251E1 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ProGate.swift";
+			path = "PageMind/Pro/ProGate.swift";
+			sourceTree = "<group>";
+		};
+		09F5148EA225CF0233AF616D = {
+			isa = PBXBuildFile;
+			fileRef = 3494AAE050C7757E66A251E1;
+		};
+		CE5A2F47A669EF04E4CC30DE = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "BrowserAgent.swift";
+			path = "PageMind/Pro/BrowserAgent.swift";
+			sourceTree = "<group>";
+		};
+		5B8E19F9DA9AC02DC92C0C48 = {
+			isa = PBXBuildFile;
+			fileRef = CE5A2F47A669EF04E4CC30DE;
+		};
+		E4521E17E77B10E8F967FFDA = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "DeepResearch.swift";
+			path = "PageMind/Pro/DeepResearch.swift";
+			sourceTree = "<group>";
+		};
+		6852580B4A7062DC65199C91 = {
+			isa = PBXBuildFile;
+			fileRef = E4521E17E77B10E8F967FFDA;
+		};
+		0912E2A58D6062CDBF2639CE = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "MorningBrief.swift";
+			path = "PageMind/Pro/MorningBrief.swift";
+			sourceTree = "<group>";
+		};
+		1865AF8F6ED29761044B3144 = {
+			isa = PBXBuildFile;
+			fileRef = 0912E2A58D6062CDBF2639CE;
+		};
+		EB3C7656D03CA66983300EA9 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "YouTubeTranscript.swift";
+			path = "PageMind/Search/YouTubeTranscript.swift";
+			sourceTree = "<group>";
+		};
+		3B1C63C52948BC388E4D19FE = {
+			isa = PBXBuildFile;
+			fileRef = EB3C7656D03CA66983300EA9;
+		};
+		5696B5A8BF5DC6E38F450E5C = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "ReaderExtractorTests.swift";
+			path = "PageMindTests/ReaderExtractorTests.swift";
+			sourceTree = "<group>";
+		};
+		D8990780755C1B586528F4AF = {
+			isa = PBXBuildFile;
+			fileRef = 5696B5A8BF5DC6E38F450E5C;
+		};
+		47F5ACC78A11600856EB7D4E = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "WebMemorySearchTests.swift";
+			path = "PageMindTests/WebMemorySearchTests.swift";
+			sourceTree = "<group>";
+		};
+		47E295376E09B37B43E23788 = {
+			isa = PBXBuildFile;
+			fileRef = 47F5ACC78A11600856EB7D4E;
+		};
+		7B99100BD057636E00153E20 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "WebSearchServiceTests.swift";
+			path = "PageMindTests/WebSearchServiceTests.swift";
+			sourceTree = "<group>";
+		};
+		A30FC868A4A624B69D654BAB = {
+			isa = PBXBuildFile;
+			fileRef = 7B99100BD057636E00153E20;
+		};
+		BC7A31A2B9186E3632145900 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			name = "PendingPageImporterTests.swift";
+			path = "PageMindTests/PendingPageImporterTests.swift";
+			sourceTree = "<group>";
+		};
+		D4AE51C41CB142E5E519A457 = {
+			isa = PBXBuildFile;
+			fileRef = BC7A31A2B9186E3632145900;
+		};
+		4CA33E3ED5EDC58E3C92C051 = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = PageMindTests.xctest;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D348B7A72EADFFA6869D851B = {
+			isa = PBXGroup;
+			children = (
+							5696B5A8BF5DC6E38F450E5C,
+							47F5ACC78A11600856EB7D4E,
+							7B99100BD057636E00153E20,
+							BC7A31A2B9186E3632145900,
+			);
+			name = PageMindTests;
+			sourceTree = "<group>";
+		};
+		3F4BC8F5C1D8F19DC351B67A = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+							D8990780755C1B586528F4AF,
+							47E295376E09B37B43E23788,
+							A30FC868A4A624B69D654BAB,
+							D4AE51C41CB142E5E519A457,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4623D87158BBF4BCF89690D6 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2E0C73F6541329AD51EBC53C = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+					BUNDLE_LOADER = "$(TEST_HOST)";
+					CODE_SIGNING_ALLOWED = NO;
+					CODE_SIGN_IDENTITY = ;
+					CODE_SIGN_STYLE = Manual;
+					CURRENT_PROJECT_VERSION = 1;
+					GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1 $(inherited)";
+					GENERATE_INFOPLIST_FILE = YES;
+					IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+					LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+					MARKETING_VERSION = 1.0;
+					PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app.tests;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SDKROOT = iphoneos;
+					SKIP_INSTALL = YES;
+					SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+					SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+					SWIFT_VERSION = 6.0;
+					TARGETED_DEVICE_FAMILY = 1;
+					TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PageMind.app/PageMind";
+				};
+			name = Debug;
+		};
+		16E0EB58542A01B51BEFE059 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+					BUNDLE_LOADER = "$(TEST_HOST)";
+					CODE_SIGNING_ALLOWED = NO;
+					CODE_SIGN_IDENTITY = ;
+					CODE_SIGN_STYLE = Manual;
+					CURRENT_PROJECT_VERSION = 1;
+					GENERATE_INFOPLIST_FILE = YES;
+					IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+					LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+					MARKETING_VERSION = 1.0;
+					PRODUCT_BUNDLE_IDENTIFIER = com.pagemind.app.tests;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SDKROOT = iphoneos;
+					SKIP_INSTALL = YES;
+					SWIFT_OPTIMIZATION_LEVEL = "-O";
+					SWIFT_VERSION = 6.0;
+					TARGETED_DEVICE_FAMILY = 1;
+					TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PageMind.app/PageMind";
+				};
+			name = Release;
+		};
+		47DE464BD198FB5447DA4A25 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+					2E0C73F6541329AD51EBC53C,
+					16E0EB58542A01B51BEFE059,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AC2CB227EB498056029A9B9A = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 47DE464BD198FB5447DA4A25;
+			buildPhases = (
+					3F4BC8F5C1D8F19DC351B67A,
+					4623D87158BBF4BCF89690D6,
+			);
+			buildRules = (
+			);
+			dependencies = (
+					9EAFC1DC806CAF0A69CA30BB,
+			);
+			name = PageMindTests;
+			productName = PageMindTests;
+			productReference = 4CA33E3ED5EDC58E3C92C051;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AE8271AE77E2E3A0B56871CD = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595;
+			proxyType = 1;
+			remoteGlobalIDString = EB18692CB7C2E0F63C9C068F;
+			remoteInfo = PageMind;
+		};
+		9EAFC1DC806CAF0A69CA30BB = {
+			isa = PBXTargetDependency;
+			target = EB18692CB7C2E0F63C9C068F;
+			targetProxy = AE8271AE77E2E3A0B56871CD;
+		};
+	};
+	rootObject = 46F86FAA6BBF9AC94A7E4595;
+}
