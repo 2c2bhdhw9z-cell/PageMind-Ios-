@@ -98,7 +98,7 @@ struct AnthropicProvider: AIProvider {
                     for (index, message) in plainMessages.enumerated() {
                         let role = message.role == "assistant" ? "assistant" : "user"
                         var content: [[String: Any]] = [["type": "text", "text": message.content]]
-                        let isLastUserMessage = role == "user" && index == messages.lastIndex(where: { $0.role != "assistant" })
+                        let isLastUserMessage = role == "user" && index == plainMessages.lastIndex(where: { $0.role != "assistant" })
                         if isLastUserMessage {
                             for imageData in images {
                                 content.append([
@@ -223,7 +223,7 @@ struct GeminiProvider: AIProvider {
                     for (index, message) in plainMessages.enumerated() {
                         let role = message.role == "assistant" ? "model" : "user"
                         var parts: [[String: Any]] = [["text": message.content]]
-                        let isLastUserMessage = role == "user" && index == messages.lastIndex(where: { $0.role != "assistant" })
+                        let isLastUserMessage = role == "user" && index == plainMessages.lastIndex(where: { $0.role != "assistant" })
                         if isLastUserMessage {
                             for imageData in images {
                                 parts.append([
