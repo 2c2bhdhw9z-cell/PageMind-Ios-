@@ -11,7 +11,9 @@ final class ChatMessage {
     var createdAt: Date
     var citationsJSON: String // JSON-encoded [SourceCitation], empty string when none
 
-    @Relationship(deleteRule: .nullify, inverse: \Chat.messages)
+    // Inverse of Chat.messages. The @Relationship lives on Chat.messages
+    // only: declaring it on both sides makes the compiler report a
+    // circular reference while expanding the macro.
     var chat: Chat?
 
     init(
