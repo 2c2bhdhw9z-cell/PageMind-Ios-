@@ -1,0 +1,35 @@
+# PageMind — local development files (never commit these)
+.DS_Store
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.xcarchive
+
+# Signing / secrets — the v1 build is unsigned on purpose.
+# When App Store signing is added later, keep these out of git.
+*.p12
+*.mobileprovision
+*.provisionprofile
+*.cer
+*.key
+*.xcconfig
+!default.xcconfig
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Swift Package Manager (not used in v1, kept for later)
+.swiftpm/
+Packages/
