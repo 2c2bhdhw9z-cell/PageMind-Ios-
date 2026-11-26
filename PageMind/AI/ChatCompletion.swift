@@ -40,15 +40,17 @@ enum ChatCompletion {
         prompt: String,
         systemPrompt: String? = nil
     ) async throws -> String {
-        let config = settings.providerConfig
-        let provider = ChatViewModel.provider(
+        // AppSettings and ChatViewModel are @MainActor: every access from
+        // this nonisolated helper needs await.
+        let config = await settings.providerConfig
+        let provider = await ChatViewModel.provider(
             for: config,
-            apiKey: settings.apiKey(for: config.kind)
+            apiKey: await settings.apiKey(for: config.kind)
         )
         return try await collectText(
             provider: provider,
             messages: [(role: "user", content: prompt)],
-            model: settings.effectiveModel,
+            model: await settings.effectiveModel,
             systemPrompt: systemPrompt
         )
     }
