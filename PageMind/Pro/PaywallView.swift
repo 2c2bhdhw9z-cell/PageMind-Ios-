@@ -15,8 +15,7 @@ struct PaywallView: View {
         ("safari", "Browser Agent", "Ask PageMind to click, type and scroll for you in the in-app browser — every step approved by you."),
         ("rectangle.on.rectangle", "Side-by-side compare", "Run the same question on two models and compare the answers."),
         ("sun.max", "Morning Brief", "A scheduled summary of your saved pages and topics, ready each morning."),
-        ("magnifyingglass", "Deep Research", "A multi-source research report on any topic, with citations."),
-        ("brain", "Unlimited semantic Web Memory", "Search your saved pages by meaning, not just keywords.")
+        ("magnifyingglass", "Deep Research", "A multi-source research report on any topic, with citations.")
     ]
 
     var body: some View {
