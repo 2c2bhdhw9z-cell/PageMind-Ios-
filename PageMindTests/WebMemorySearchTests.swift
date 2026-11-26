@@ -9,7 +9,7 @@ final class WebMemorySearchTests: XCTestCase {
 
     private func page(title: String, text: String, tags: [String] = [], daysAgo: Double = 0) -> SavedPage {
         SavedPage(
-            url: https://example.com/\(title.lowercased().replacingOccurrences(of: " ", with: "-"))",
+            url: "https://example.com/\(title.lowercased().replacingOccurrences(of: " ", with: "-"))",
             title: title,
             readerText: text,
             excerpt: String(text.prefix(100)),
