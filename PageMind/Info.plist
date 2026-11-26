@@ -6,6 +6,8 @@
 	<string>PageMind</string>
 	<key>CFBundleName</key>
 	<string>PageMind</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.pagemind.app</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
