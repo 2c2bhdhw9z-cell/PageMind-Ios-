@@ -129,7 +129,11 @@ enum MorningBriefScheduler {
             }
             // Reschedule first, so a failure still leaves tomorrow's brief queued.
             Task { @MainActor in scheduleNext() }
-            Task {
+            // @MainActor so the Task closure may capture refreshTask: a plain
+            // Task closure is @Sendable and may not capture the non-Sendable
+            // BGAppRefreshTask, but a MainActor-isolated closure confines
+            // the capture to the main actor.
+            Task { @MainActor in
                 let success = await generateInBackground()
                 refreshTask.setTaskCompleted(success: success)
             }
