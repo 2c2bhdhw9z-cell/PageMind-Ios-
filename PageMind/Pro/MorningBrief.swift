@@ -214,11 +214,15 @@ enum MorningBriefScheduler {
     /// @MainActor because ModelContainer.mainContext is MainActor-isolated.
     @MainActor
     private static func loadRecentPages() -> [SavedPage] {
+        // Never pass the group identifier when there is no entitlement:
+        // SwiftData fatally crashes inside ModelContainer init instead
+        // of throwing, so try? cannot save us here.
+        guard AppGroup.isAvailable else { return [] }
         let schema = Schema([SavedPage.self])
         let configuration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false,
-            groupContainer: .identifier("group.com.pagemind.app")
+            groupContainer: .identifier(AppGroup.identifier)
         )
         guard let container = try? ModelContainer(for: schema, configurations: [configuration]) else {
             return []
@@ -231,11 +235,15 @@ enum MorningBriefScheduler {
     /// @MainActor because ModelContainer.mainContext is MainActor-isolated.
     @MainActor
     private static func saveBriefAsNote(_ brief: String) -> Bool {
+        // Never pass the group identifier when there is no entitlement:
+        // SwiftData fatally crashes inside ModelContainer init instead
+        // of throwing, so try? cannot save us here.
+        guard AppGroup.isAvailable else { return false }
         let schema = Schema([SavedPage.self])
         let configuration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false,
-            groupContainer: .identifier("group.com.pagemind.app")
+            groupContainer: .identifier(AppGroup.identifier)
         )
         guard let container = try? ModelContainer(for: schema, configurations: [configuration]) else {
             return false
