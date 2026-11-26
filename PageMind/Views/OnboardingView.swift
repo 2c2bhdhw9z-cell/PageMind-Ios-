@@ -55,7 +55,7 @@ private struct OnboardingPage: View {
             Spacer()
             Image(systemName: systemImage)
                 .font(.system(size: 72))
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.accentColor)
             Text(title)
                 .font(.largeTitle.bold())
                 .multilineTextAlignment(.center)
