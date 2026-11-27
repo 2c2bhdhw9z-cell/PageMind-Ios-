@@ -218,7 +218,17 @@ struct ChatView: View {
     private var homeView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: PageMindDesign.rowSpacing) {
-                Spacer(minLength: 32)
+                Spacer(minLength: 24)
+
+                // Brand mark above the greeting — the home screen's
+                // designed anchor, matching the app icon.
+                Image(systemName: "text.bubble.fill")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 52, height: 52)
+                    .background(PageMindDesign.brandGradient)
+                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                    .shadow(color: PageMindDesign.brandIndigo.opacity(0.4), radius: 16, x: 0, y: 6)
 
                 Text(greeting)
                     .font(.largeTitle.bold())
@@ -233,13 +243,17 @@ struct ChatView: View {
 
                 modelPickerPill
 
-                HStack(spacing: 8) {
-                    Button("Attach a saved page") { showAttachSheet = true }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                    Button("Ask with web search") { useWebSearch = true }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                // Suggestion chips: the same two quick actions as
+                // before, restyled as chips instead of bordered buttons.
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        suggestionChip("Attach a saved page", systemImage: "books.vertical") {
+                            showAttachSheet = true
+                        }
+                        suggestionChip("Ask with web search", systemImage: "magnifyingglass") {
+                            useWebSearch = true
+                        }
+                    }
                 }
 
                 if settings.apiKey(for: settings.selectedProvider) == nil
@@ -260,22 +274,48 @@ struct ChatView: View {
         }
     }
 
+    /// One suggestion chip on the chat home.
+    private func suggestionChip(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .foregroundStyle(PageMindDesign.brandIndigo)
+                Text(title)
+            }
+            .font(.subheadline)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(PageMindDesign.elevatedCard)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
     /// Current-model pill. Tap opens the model list; picking a model
     /// writes AppSettings.selectedModel, which reconfigures the chat.
+    /// Elevated card with an indigo ring — a real control, not a grey
+    /// blob.
     private var modelPickerPill: some View {
         Button { showModelPicker = true } label: {
             HStack(spacing: 6) {
                 Image(systemName: "sparkles")
+                    .foregroundStyle(PageMindDesign.brandIndigo)
                 Text(viewModel.selectedModel)
+                    .fontWeight(.semibold)
                     .lineLimit(1)
                 Image(systemName: "chevron.down")
                     .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             .font(.subheadline)
             .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(PageMindDesign.cardBackground)
+            .padding(.vertical, 9)
+            .background(PageMindDesign.elevatedCard)
             .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(PageMindDesign.brandIndigo.opacity(0.35), lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
@@ -348,7 +388,7 @@ struct ChatView: View {
                     Spacer()
                     if model == viewModel.selectedModel {
                         Image(systemName: "checkmark")
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(PageMindDesign.brandIndigo)
                     }
                 }
             }
@@ -375,8 +415,8 @@ struct ChatView: View {
             .bold()
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(Color.accentColor.opacity(0.15))
-            .foregroundStyle(Color.accentColor)
+            .background(PageMindDesign.brandIndigo.opacity(0.15))
+            .foregroundStyle(PageMindDesign.brandIndigo)
             .clipShape(Capsule())
     }
 
@@ -416,7 +456,7 @@ struct ChatView: View {
                             .font(.footnote)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color.secondary.opacity(0.15))
+                            .background(PageMindDesign.elevatedCard)
                             .clipShape(Capsule())
                         }
                     }
@@ -441,7 +481,7 @@ struct ChatView: View {
                             .font(.footnote)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color.secondary.opacity(0.15))
+                            .background(PageMindDesign.elevatedCard)
                             .clipShape(Capsule())
                         }
                     }
@@ -466,7 +506,7 @@ struct ChatView: View {
                             .font(.footnote)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color.secondary.opacity(0.15))
+                            .background(PageMindDesign.elevatedCard)
                             .clipShape(Capsule())
                         }
                     }
@@ -517,9 +557,12 @@ struct ChatView: View {
                 } label: {
                     Image(systemName: "plus")
                         .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
                         .frame(width: 36, height: 36)
-                        .background(Color.secondary.opacity(0.12))
+                        .background(PageMindDesign.brandGradient)
                         .clipShape(Circle())
+                        .shadow(color: PageMindDesign.brandIndigo.opacity(0.35), radius: 8, x: 0, y: 3)
                 }
                 .accessibilityLabel("Add to message")
 
@@ -531,8 +574,8 @@ struct ChatView: View {
                                 .bold()
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)
-                                .background(Color.accentColor.opacity(0.15))
-                                .foregroundStyle(Color.accentColor)
+                                .background(PageMindDesign.brandIndigo.opacity(0.15))
+                                .foregroundStyle(PageMindDesign.brandIndigo)
                                 .clipShape(Capsule())
                         }
                         if useWebFetch {
@@ -541,8 +584,8 @@ struct ChatView: View {
                                 .bold()
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)
-                                .background(Color.accentColor.opacity(0.15))
-                                .foregroundStyle(Color.accentColor)
+                                .background(PageMindDesign.brandIndigo.opacity(0.15))
+                                .foregroundStyle(PageMindDesign.brandIndigo)
                                 .clipShape(Capsule())
                         }
                     }
@@ -561,22 +604,36 @@ struct ChatView: View {
             HStack(alignment: .bottom) {
                 TextField("Ask PageMind anything…", text: $draft, axis: .vertical)
                     .lineLimit(1...5)
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 12)
-                    .background(Color.secondary.opacity(0.12))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .padding(.vertical, 11)
+                    .padding(.horizontal, 14)
+                    .background(PageMindDesign.elevatedCard)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    )
                     .disabled(viewModel.isStreaming)
 
                 if viewModel.isStreaming {
                     Button("Stop") {
                         viewModel.cancelStreaming()
                     }
+                    .frame(width: 36, height: 36)
                 } else {
                     Button {
                         sendDraft()
                     } label: {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.title2)
+                        Image(systemName: "arrow.up")
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .frame(width: 36, height: 36)
+                            .background(
+                                draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                    ? AnyShapeStyle(Color.secondary.opacity(0.3))
+                                    : AnyShapeStyle(PageMindDesign.brandGradient)
+                            )
+                            .clipShape(Circle())
                     }
                     .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
@@ -793,7 +850,11 @@ private struct MessageRow: View {
                 Text(message.role == "assistant" ? "PageMind" : "You")
                     .font(.caption)
                     .bold()
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(
+                        message.role == "assistant"
+                            ? PageMindDesign.brandIndigo
+                            : .secondary
+                    )
                 Spacer()
                 Button {
                     #if os(iOS)
@@ -834,8 +895,8 @@ private struct MessageRow: View {
         .padding(12)
         .background(
             message.role == "assistant"
-                ? Color.secondary.opacity(0.12)
-                : Color.accentColor.opacity(0.12)
+                ? PageMindDesign.elevatedCard
+                : PageMindDesign.brandIndigo.opacity(0.16)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
