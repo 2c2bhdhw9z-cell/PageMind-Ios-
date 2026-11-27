@@ -304,18 +304,21 @@ struct ChatView: View {
                 } label: {
                     Label("Attach page", systemImage: "paperclip")
                         .font(.footnote)
+                        .labelStyle(.iconOnly)
                 }
                 Button {
                     showPDFImporter = true
                 } label: {
                     Label("PDF", systemImage: "doc.fill")
                         .font(.footnote)
+                        .labelStyle(.iconOnly)
                 }
                 Button {
                     showPhotoPicker = true
                 } label: {
                     Label("Photo", systemImage: "photo")
                         .font(.footnote)
+                        .labelStyle(.iconOnly)
                 }
                 .disabled(attachedImages.count >= VisionImagePrep.maxImagesPerChat)
             }
