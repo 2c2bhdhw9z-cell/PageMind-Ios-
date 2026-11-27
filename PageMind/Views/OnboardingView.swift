@@ -10,7 +10,7 @@ struct OnboardingView: View {
             OnboardingPage(
                 systemImage: "book.pages",
                 title: "PageMind reads with you",
-                bodyText: "Save any page, PDF or YouTube video, then ask anything about it. PageMind answers from the page in front of you — with sources. Web search and PDF chat are free."
+                bodyText: "Save any page, PDF or YouTube video, then ask anything about it. PageMind answers from the page in front of you — with sources. PDF chat is free."
             )
             .tag(0)
 
@@ -57,12 +57,17 @@ private struct OnboardingPage: View {
                 .font(.system(size: 72))
                 .foregroundStyle(Color.accentColor)
             Text(title)
-                .font(.largeTitle.bold())
+                .font(.title.bold())
                 .multilineTextAlignment(.center)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 16)
             Text(bodyText)
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 32)
             Spacer()
         }
