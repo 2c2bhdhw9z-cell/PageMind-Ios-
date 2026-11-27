@@ -81,6 +81,11 @@ enum AppGroup {
 @main
 struct PageMindApp: App {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    // Read here (not through AppSettings.shared) so that changing Theme,
+    // Font size or Display language in Settings redraws the app at once.
+    @AppStorage("appThemeRaw") private var appThemeRaw = AppTheme.auto.rawValue
+    @AppStorage("appFontSizeRaw") private var appFontSizeRaw = AppFontSize.medium.rawValue
+    @AppStorage("appLanguageRaw") private var appLanguageRaw = "system"
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -144,9 +149,9 @@ struct PageMindApp: App {
             // theme, text size, and display language. These read the
             // shared AppSettings instance, so changing them in Settings
             // takes effect immediately.
-            .preferredColorScheme(AppSettings.shared.preferredColorScheme)
-            .dynamicTypeSize(AppSettings.shared.preferredTypeSize)
-            .environment(\.locale, AppSettings.shared.preferredLocale)
+            .preferredColorScheme((AppTheme(rawValue: appThemeRaw) ?? .auto).colorScheme)
+            .dynamicTypeSize((AppFontSize(rawValue: appFontSizeRaw) ?? .medium).dynamicTypeSize)
+            .environment(\.locale, appLanguageRaw == "system" ? .autoupdatingCurrent : Locale(identifier: appLanguageRaw))
             // Keyboard: dragging any list or page down puts it away, and
             // so does tapping outside a text field.
             .scrollDismissesKeyboard(.interactively)

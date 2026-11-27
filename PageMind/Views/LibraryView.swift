@@ -138,34 +138,34 @@ struct LibraryView: View {
     /// classified from the page URL (see SavedPage.isImageURL /
     /// isFileURL); Favorites is the star on each row.
     private var filterPills: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                collectionMenu
-                ForEach(LibraryFilter.allCases) { pill in
-                    Button {
-                        filter = pill
-                    } label: {
-                        Text(pill.label)
-                            .font(.subheadline)
-                            .bold(filter == pill)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 7)
-                            .background(
-                                filter == pill
-                                    ? PageMindDesign.brandIndigo
-                                    : PageMindDesign.elevatedCard
-                            )
-                            .foregroundStyle(
-                                filter == pill ? Color.white : Color.primary
-                            )
-                            .clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
+        // Wraps onto a second line instead of running off the screen.
+        FlowLayout(spacing: 8, lineSpacing: 8) {
+            collectionMenu
+            ForEach(LibraryFilter.allCases) { pill in
+                Button {
+                    filter = pill
+                } label: {
+                    Text(pill.label)
+                        .font(.subheadline)
+                        .bold(filter == pill)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .background(
+                            filter == pill
+                                ? PageMindDesign.brandIndigo
+                                : PageMindDesign.elevatedCard
+                        )
+                        .foregroundStyle(
+                            filter == pill ? Color.white : Color.primary
+                        )
+                        .clipShape(Capsule())
                 }
+                .buttonStyle(.plain)
             }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal)
+        .padding(.vertical, 8)
     }
 
     /// Menu-style collection picker (replaces the old segmented control,
