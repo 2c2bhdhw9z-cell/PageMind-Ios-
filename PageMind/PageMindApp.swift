@@ -63,11 +63,20 @@ struct PageMindApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if hasSeenOnboarding {
-                MainTabView()
-            } else {
-                OnboardingView()
+            Group {
+                if hasSeenOnboarding {
+                    AppShellView()
+                } else {
+                    OnboardingView()
+                }
             }
+            // Appearance settings (Settings → General) applied app-wide:
+            // theme, text size, and display language. These read the
+            // shared AppSettings instance, so changing them in Settings
+            // takes effect immediately.
+            .preferredColorScheme(AppSettings.shared.preferredColorScheme)
+            .dynamicTypeSize(AppSettings.shared.preferredTypeSize)
+            .environment(\.locale, AppSettings.shared.preferredLocale)
         }
         .modelContainer(sharedModelContainer)
         .environmentObject(AppSettings.shared)
@@ -75,8 +84,8 @@ struct PageMindApp: App {
 }
 
 /// Shared in-memory handoff from Browser ("Ask about this page") to Chat.
-/// BrowserView sets `pendingPage` and bumps `askRequestID`; MainTabView
-/// switches to the Chat tab, and ChatView picks the page up as context.
+/// BrowserView sets `pendingPage` and bumps `askRequestID`; AppShellView
+/// switches to the Chat destination, and ChatView picks the page up as context.
 @MainActor
 final class PageContextStore: ObservableObject {
     @Published var pendingPage: SavedPage?
@@ -90,50 +99,5 @@ final class PageContextStore: ObservableObject {
     func takePendingPage() -> SavedPage? {
         defer { pendingPage = nil }
         return pendingPage
-    }
-}
-
-struct MainTabView: View {
-    @Environment(\.modelContext) private var modelContext
-    @StateObject private var pageContext = PageContextStore()
-    @State private var selection = 0
-
-    var body: some View {
-        TabView(selection: $selection) {
-            BrowserView()
-                .tabItem {
-                    Label("Browser", systemImage: "globe")
-                }
-                .tag(0)
-
-            LibraryView()
-                .tabItem {
-                    Label("Library", systemImage: "books.vertical")
-                }
-                .tag(1)
-
-            ChatView()
-                .tabItem {
-                    Label("Chat", systemImage: "message")
-                }
-                .tag(2)
-
-            SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape")
-                }
-                .tag(3)
-        }
-        .environmentObject(pageContext)
-        .onChange(of: pageContext.askRequestID) { _, _ in
-            selection = 2
-        }
-        .task {
-            // Import pages saved from the Share / Safari extensions
-            // while the app was not running.
-            PendingPageImporter.importPendingPages(modelContext: modelContext)
-            let pages = (try? modelContext.fetch(FetchDescriptor<SavedPage>())) ?? []
-            WidgetDataWriter.writeSnapshot(pages: pages)
-        }
     }
 }
