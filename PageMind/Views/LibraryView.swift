@@ -17,6 +17,7 @@ struct LibraryView: View {
     @Query(sort: \CollectionModel.name) private var collections: [CollectionModel]
 
     @State private var searchText = ""
+    @State private var filter: LibraryFilter = .all
     @State private var selectedCollectionID: UUID?
     @State private var selectedPage: SavedPage?
     @State private var showingNewCollection = false
@@ -29,44 +30,73 @@ struct LibraryView: View {
         if let id = selectedCollectionID {
             result = result.filter { $0.collectionID == id }
         }
+        switch filter {
+        case .all:
+            break
+        case .favorites:
+            result = result.filter { $0.isFavorite }
+        case .images:
+            result = result.filter { $0.isImageURL }
+        case .files:
+            result = result.filter { $0.isFileURL }
+        }
         return searcher.search(query: searchText, in: result)
     }
 
     var body: some View {
         NavigationStack {
-            Group {
-                if pages.isEmpty {
-                    emptyState
-                } else if filteredPages.isEmpty {
-                    ContentUnavailableView(
-                        "No matching pages",
-                        systemImage: "magnifyingglass",
-                        description: Text("Try a different search or collection.")
-                    )
-                } else {
-                    List {
-                        ForEach(filteredPages) { page in
-                            Button { selectedPage = page } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(page.title)
-                                        .font(.headline)
-                                        .lineLimit(2)
-                                    if !page.excerpt.isEmpty {
-                                        Text(page.excerpt)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                            .lineLimit(2)
+            VStack(spacing: 0) {
+                filterPills
+                Group {
+                    if pages.isEmpty {
+                        emptyState
+                    } else if filteredPages.isEmpty {
+                        ContentUnavailableView(
+                            "No matching pages",
+                            systemImage: "magnifyingglass",
+                            description: Text("Try a different search, filter, or collection.")
+                        )
+                    } else {
+                        List {
+                            ForEach(filteredPages) { page in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Button { selectedPage = page } label: {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(page.title)
+                                                .font(.headline)
+                                                .lineLimit(2)
+                                            if !page.excerpt.isEmpty {
+                                                Text(page.excerpt)
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(.secondary)
+                                                    .lineLimit(2)
+                                            }
+                                            Text(page.savedAt, style: .date)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     }
-                                    Text(page.savedAt, style: .date)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                    .buttonStyle(.plain)
+
+                                    Button {
+                                        page.isFavorite.toggle()
+                                        try? modelContext.save()
+                                    } label: {
+                                        Image(systemName: page.isFavorite ? "star.fill" : "star")
+                                            .foregroundStyle(page.isFavorite ? .yellow : .secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(
+                                        page.isFavorite ? "Remove \(page.title) from favorites" : "Add \(page.title) to favorites"
+                                    )
                                 }
-                            }
-                            .swipeActions {
-                                Button(role: .destructive) {
-                                    modelContext.delete(page)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                                .swipeActions {
+                                    Button(role: .destructive) {
+                                        modelContext.delete(page)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
                             }
                         }
@@ -76,6 +106,9 @@ struct LibraryView: View {
             .navigationTitle("Library")
             .searchable(text: $searchText, prompt: "Search saved pages")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    SidebarToggleButton()
+                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     collectionMenu
                 }
@@ -89,6 +122,41 @@ struct LibraryView: View {
             .sheet(isPresented: $showingNewCollection) {
                 newCollectionSheet
             }
+        }
+    }
+
+    /// Filter pills (All / Favorites / Images / Files), matching the
+    /// Library filters SurfMind's web Library shows — over real saved
+    /// pages, which SurfMind does not have. Images and files are
+    /// classified from the page URL (see SavedPage.isImageURL /
+    /// isFileURL); Favorites is the star on each row.
+    private var filterPills: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(LibraryFilter.allCases) { pill in
+                    Button {
+                        filter = pill
+                    } label: {
+                        Text(pill.label)
+                            .font(.subheadline)
+                            .bold(filter == pill)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 7)
+                            .background(
+                                filter == pill
+                                    ? Color.accentColor
+                                    : Color.secondary.opacity(0.12)
+                            )
+                            .foregroundStyle(
+                                filter == pill ? Color.white : Color.primary
+                            )
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
         }
     }
 
@@ -156,7 +224,8 @@ struct LibraryView: View {
 }
 
 /// Reader sheet: shows the saved page's extracted text.
-private struct ReaderSheetView: View {
+/// Internal (not private) so SearchView can reuse it.
+struct ReaderSheetView: View {
     let page: SavedPage
     @Environment(\.dismiss) private var dismiss
 
@@ -174,6 +243,27 @@ private struct ReaderSheetView: View {
                     Button("Done") { dismiss() }
                 }
             }
+        }
+    }
+}
+
+// MARK: - Library filter pills
+
+/// The Library filter pills (All / Favorites / Images / Files).
+enum LibraryFilter: String, CaseIterable, Identifiable {
+    case all
+    case favorites
+    case images
+    case files
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .all: return "All"
+        case .favorites: return "Favorites"
+        case .images: return "Images"
+        case .files: return "Files"
         }
     }
 }
