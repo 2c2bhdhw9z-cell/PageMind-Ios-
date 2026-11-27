@@ -101,6 +101,7 @@ struct ChatView: View {
             .background(PageMindDesign.appBackground)
             .navigationTitle(viewModel.currentChat?.title ?? "Chat")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     SidebarToggleButton()
@@ -215,38 +216,43 @@ struct ChatView: View {
 
     /// Chat-first home: greeting, model picker pill, quick actions,
     /// and the same composer used once a conversation starts.
+    ///
+    /// The composer is pinned to the bottom of the screen, outside the
+    /// ScrollView: on the first version it lived inside the scroll
+    /// content and sat below the fold, half cut off at the bottom edge.
     private var homeView: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: PageMindDesign.rowSpacing) {
-                Spacer(minLength: 24)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: PageMindDesign.rowSpacing) {
+                    Spacer(minLength: 24)
 
-                // Brand mark above the greeting — the home screen's
-                // designed anchor, matching the app icon.
-                Image(systemName: "text.bubble.fill")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 52, height: 52)
-                    .background(PageMindDesign.brandGradient)
-                    .clipShape(RoundedRectangle(cornerRadius: 15))
-                    .shadow(color: PageMindDesign.brandIndigo.opacity(0.4), radius: 16, x: 0, y: 6)
+                    // Brand mark above the greeting — the home screen's
+                    // designed anchor, matching the app icon.
+                    Image(systemName: "text.bubble.fill")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 52, height: 52)
+                        .background(PageMindDesign.brandGradient)
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                        .shadow(color: PageMindDesign.brandIndigo.opacity(0.4), radius: 16, x: 0, y: 6)
 
-                Text(greeting)
-                    .font(.largeTitle.bold())
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
+                    Text(greeting)
+                        .font(.largeTitle.bold())
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                Text("Ask about a page, a PDF, a photo, or anything else.")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
+                    Text("Ask about a page, a PDF, a photo, or anything else.")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                modelPickerPill
+                    modelPickerPill
 
-                // Suggestion chips: the same two quick actions as
-                // before, restyled as chips instead of bordered buttons.
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
+                    // Suggestion chips, stacked full-width: the
+                    // horizontal scroll row ran the second chip off the
+                    // right edge of the screen, half cut off.
+                    VStack(alignment: .leading, spacing: 8) {
                         suggestionChip("Attach a saved page", systemImage: "books.vertical") {
                             showAttachSheet = true
                         }
@@ -254,37 +260,39 @@ struct ChatView: View {
                             useWebSearch = true
                         }
                     }
-                }
 
-                if settings.apiKey(for: settings.selectedProvider) == nil
-                    && settings.selectedProvider.requiresKey {
-                    Button("Add an API key — or use OpenRouter free models") {
-                        showSettingsSheet = true
+                    if settings.apiKey(for: settings.selectedProvider) == nil
+                        && settings.selectedProvider.requiresKey {
+                        Button("Add an API key — or use OpenRouter free models") {
+                            showSettingsSheet = true
+                        }
+                        .font(.footnote)
                     }
-                    .font(.footnote)
+
+                    Spacer(minLength: 16)
                 }
-
-                attachedPagesBar
-                composer
-
-                Spacer(minLength: 16)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
+
+            attachedPagesBar
+            composer
         }
     }
 
-    /// One suggestion chip on the chat home.
+    /// One suggestion chip on the chat home. Full-width so it can
+    /// never run off the edge of the screen.
     private func suggestionChip(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: systemImage)
                     .foregroundStyle(PageMindDesign.brandIndigo)
                 Text(title)
+                Spacer()
             }
             .font(.subheadline)
             .padding(.horizontal, 14)
-            .padding(.vertical, 9)
+            .padding(.vertical, 11)
             .background(PageMindDesign.elevatedCard)
             .clipShape(Capsule())
         }
