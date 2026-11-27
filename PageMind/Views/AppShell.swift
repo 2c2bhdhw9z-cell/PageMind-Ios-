@@ -3,15 +3,68 @@ import SwiftData
 
 // MARK: - Shared design tokens
 
-/// Small shared design tokens for the app shell.
+/// The PageMind visual system.
 ///
-/// `appBackground` is secondarySystemBackground: a very dark grey in
-/// dark mode (#1C1C1E) and a light grey in light mode — never pure
-/// black, so the home screen does not read as an empty black void.
+/// Brand comes from the app icon: an indigo gradient page with a cyan
+/// chat bubble. Indigo (#4F46E5 family) to cyan is the hero gradient;
+/// indigo is the accent everywhere else. Surfaces are deliberate, not
+/// the old "secondarySystemBackground everywhere" that read as a
+/// default settings screen:
+///
+/// - Dark mode: true black app background, elevated cards in dark grey.
+/// - Light mode: white app background, elevated cards in light grey.
+///
+/// All brand colour is explicit in code (never `Color.accentColor`),
+/// so the look does not depend on the AccentColor asset resolving.
 enum PageMindDesign {
-    static let appBackground = Color(uiColor: .secondarySystemBackground)
-    static let cardBackground = Color(uiColor: .tertiarySystemBackground)
+    // MARK: Surfaces
+    /// True system background: black in dark mode, white in light mode.
+    static let appBackground = Color(uiColor: .systemBackground)
+    /// Raised card surface: #1C1C1E in dark mode, #F2F2F7 in light mode.
+    static let elevatedCard = Color(uiColor: .secondarySystemBackground)
+    /// Recessed surface inside a card (text fields, chips on cards).
+    static let subtleCard = Color(uiColor: .tertiarySystemBackground)
+    /// Translucent fill for pills and chips sitting on the background.
+    static let subtleFill = Color.primary.opacity(0.08)
+
+    // MARK: Brand — from the app icon
+    static let brandIndigo = Color(red: 79 / 255, green: 70 / 255, blue: 229 / 255)
+    static let brandIndigoDeep = Color(red: 67 / 255, green: 56 / 255, blue: 202 / 255)
+    static let brandCyan = Color(red: 34 / 255, green: 211 / 255, blue: 238 / 255)
+    /// Indigo → cyan, top-leading to bottom-trailing. Hero elements only
+    /// (logo tile, Pro card, primary buttons, active filter pills).
+    static let brandGradient = LinearGradient(
+        colors: [brandIndigoDeep, brandIndigo, brandCyan],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    // MARK: Text
+    static let primaryText = Color.primary
+    static let secondaryText = Color.secondary
+
     static let rowSpacing: CGFloat = 20
+
+    /// Kept for the few call sites that still say `cardBackground`:
+    /// it is the elevated card surface.
+    static let cardBackground = elevatedCard
+}
+
+/// iOS Settings-style icon chip: a small rounded square with a white
+/// glyph on the brand colour. Used wherever an icon leads a row
+/// (sidebar, paywall features, library/search rows).
+struct IconChip: View {
+    let systemImage: String
+    var tint: Color = PageMindDesign.brandIndigo
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 28, height: 28)
+            .background(tint)
+            .clipShape(RoundedRectangle(cornerRadius: 7))
+    }
 }
 
 // MARK: - Shell state
@@ -68,7 +121,7 @@ struct DrawerRowButtonStyle: ButtonStyle {
         configuration.label
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(configuration.isPressed ? Color.primary.opacity(0.08) : Color.clear)
+            .background(configuration.isPressed ? PageMindDesign.subtleFill : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
@@ -195,8 +248,15 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Compact header — a plain title row, no large-title void.
-            HStack {
+            // Compact header: gradient logo tile + wordmark, no
+            // large-title void.
+            HStack(spacing: 10) {
+                Image(systemName: "text.bubble.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 34, height: 34)
+                    .background(PageMindDesign.brandGradient)
+                    .clipShape(RoundedRectangle(cornerRadius: 9))
                 Text("PageMind")
                     .font(.title2.bold())
                 Spacer()
@@ -219,22 +279,23 @@ struct SidebarView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     drawerSection {
                         Button { shell.openNewChat(); closeDrawer() } label: {
-                            Label("New chat", systemImage: "square.and.pencil")
+                            drawerRow("New chat", systemImage: "square.and.pencil")
                         }
                         Button { select(.search) } label: {
-                            Label("Search", systemImage: "magnifyingglass")
+                            drawerRow("Search", systemImage: "magnifyingglass")
                         }
                         Button { select(.library) } label: {
-                            Label("Library", systemImage: "books.vertical")
+                            drawerRow("Library", systemImage: "books.vertical")
                         }
                         Button { select(.browser) } label: {
-                            Label("Browser", systemImage: "globe")
+                            drawerRow("Browser", systemImage: "globe")
                         }
                     }
 
-                    Text("Pro")
+                    Text("PRO")
                         .font(.footnote)
                         .bold()
+                        .tracking(0.8)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
@@ -242,19 +303,20 @@ struct SidebarView: View {
 
                     drawerSection {
                         Button { select(.compare) } label: {
-                            Label("Compare models", systemImage: "square.split.2x2")
+                            drawerRow("Compare models", systemImage: "square.split.2x2")
                         }
                         Button { select(.morningBrief) } label: {
-                            Label("Morning Brief", systemImage: "sunrise")
+                            drawerRow("Morning Brief", systemImage: "sunrise")
                         }
                         Button { select(.deepResearch) } label: {
-                            Label("Deep Research", systemImage: "doc.text.magnifyingglass")
+                            drawerRow("Deep Research", systemImage: "doc.text.magnifyingglass")
                         }
                     }
 
-                    Text("Recents")
+                    Text("RECENTS")
                         .font(.footnote)
                         .bold()
+                        .tracking(0.8)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
@@ -284,7 +346,7 @@ struct SidebarView: View {
                             }
                             .background(
                                 shell.openChat?.id == chat.id && shell.selection == .chat
-                                    ? Color.accentColor.opacity(0.15)
+                                    ? PageMindDesign.brandIndigo.opacity(0.15)
                                     : Color.clear
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -300,7 +362,7 @@ struct SidebarView: View {
 
                     drawerSection {
                         Button { select(.settings) } label: {
-                            Label("Settings", systemImage: "gearshape")
+                            drawerRow("Settings", systemImage: "gearshape")
                         }
                     }
                 }
@@ -317,6 +379,17 @@ struct SidebarView: View {
     }
 
     // MARK: - Sidebar helpers
+
+    /// One drawer row: brand icon chip + label. The chip is what
+    /// makes the sidebar read as designed instead of a plain list.
+    private func drawerRow(_ title: String, systemImage: String) -> some View {
+        HStack(spacing: 12) {
+            IconChip(systemImage: systemImage)
+            Text(title)
+                .font(.body)
+                .foregroundStyle(PageMindDesign.primaryText)
+        }
+    }
 
     /// One rounded-card section of rows, matching the old look but
     /// laid out by a plain VStack so nothing can overlap it.
@@ -353,7 +426,9 @@ struct SidebarView: View {
 
     /// Free / Pro status at the bottom of the sidebar. PageMind has no
     /// account and no credits system, so this shows only the Pro state.
-    /// Solid background, a normal footer view — it never overlaps rows.
+    /// A designed gradient card (indigo → cyan, white text) — the
+    /// footer's hero element, not a grey box. Solid gradient, a normal
+    /// footer view — it never overlaps rows.
     private var proCard: some View {
         Button {
             shell.showingPaywall = true
@@ -361,28 +436,30 @@ struct SidebarView: View {
             HStack(spacing: 12) {
                 Image(systemName: store.isPro ? "checkmark.seal.fill" : "sparkles")
                     .font(.title3)
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(.white)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(store.isPro ? "PageMind Pro" : "PageMind Free")
                         .font(.subheadline)
                         .bold()
+                        .foregroundStyle(.white)
                         .lineLimit(1)
                     Text(store.isPro
                          ? "Pro is active"
                          : "Browser Agent, Compare, Morning Brief and Deep Research")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white.opacity(0.85))
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.7))
             }
-            .padding(12)
-            .background(PageMindDesign.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(14)
+            .background(PageMindDesign.brandGradient)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: PageMindDesign.brandIndigo.opacity(0.35), radius: 12, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 16)
