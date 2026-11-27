@@ -18,11 +18,22 @@ struct ProGate<Content: View>: View {
         if store.isPro {
             content
         } else {
-            VStack(spacing: 16) {
-                Text("This is a Pro feature.")
-                    .font(.headline)
-                PaywallView()
+            // The paywall's content inline, under the screen's own top
+            // bar. (Before, a whole paywall sheet was embedded here, with
+            // a Close button that could not close anything.)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    Label("Part of PageMind Pro", systemImage: "lock.fill")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(PageMindDesign.brandIndigo)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(PageMindDesign.brandIndigo.opacity(0.15)))
+                    PaywallContent()
+                }
+                .padding(16)
             }
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 }

@@ -46,6 +46,14 @@ struct LibraryView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                ScreenHeader(title: "Library") {
+                    TopBarIconButton(systemImage: "folder.badge.plus", accessibilityLabel: "New collection") {
+                        showingNewCollection = true
+                    }
+                }
+                SearchField(text: $searchText, prompt: "Search saved pages")
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 2)
                 filterPills
                 Group {
                     if pages.isEmpty {
@@ -103,6 +111,7 @@ struct LibraryView: View {
                                         Label("Delete", systemImage: "trash")
                                     }
                                 }
+                                .listRowBackground(PageMindDesign.elevatedCard)
                             }
                         }
                         .listStyle(.insetGrouped)
@@ -111,19 +120,9 @@ struct LibraryView: View {
                     }
                 }
             }
-            .navigationTitle("Library")
-            .searchable(text: $searchText, prompt: "Search saved pages")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    SidebarToggleButton()
-                }
-                ToolbarItem(placement: .navigationBarLeading) {
-                    collectionMenu
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("New collection") { showingNewCollection = true }
-                }
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(PageMindDesign.appBackground.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $selectedPage) { page in
                 ReaderSheetView(page: page)
             }
@@ -141,6 +140,7 @@ struct LibraryView: View {
     private var filterPills: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
+                collectionMenu
                 ForEach(LibraryFilter.allCases) { pill in
                     Button {
                         filter = pill
@@ -152,8 +152,8 @@ struct LibraryView: View {
                             .padding(.vertical, 7)
                             .background(
                                 filter == pill
-                                    ? AnyShapeStyle(PageMindDesign.brandGradient)
-                                    : AnyShapeStyle(PageMindDesign.elevatedCard)
+                                    ? PageMindDesign.brandIndigo
+                                    : PageMindDesign.elevatedCard
                             )
                             .foregroundStyle(
                                 filter == pill ? Color.white : Color.primary
@@ -181,12 +181,22 @@ struct LibraryView: View {
             }
             .pickerStyle(.inline)
         } label: {
-            Label(
-                selectedCollectionName,
-                systemImage: "chevron.down"
-            )
+            HStack(spacing: 5) {
+                Image(systemName: "folder")
+                    .font(.system(size: 13))
+                Text(selectedCollectionName)
+                    .lineLimit(1)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
             .font(.subheadline)
+            .foregroundStyle(PageMindDesign.primaryText)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(Capsule().stroke(Color.primary.opacity(0.14), lineWidth: 1))
         }
+        .accessibilityLabel("Collection: \(selectedCollectionName)")
     }
 
     private var selectedCollectionName: String {
@@ -201,7 +211,7 @@ struct LibraryView: View {
         ContentUnavailableView(
             "No pages saved yet",
             systemImage: "bookmark",
-            description: Text("Save a page from Safari or the share sheet, then ask PageMind anything about it.")
+            description: Text("Open a page in the Browser and tap Save page. Then ask PageMind anything about it.")
         )
     }
 

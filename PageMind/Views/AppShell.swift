@@ -232,6 +232,105 @@ struct SidebarToggleButton: View {
     }
 }
 
+/// Puts the keyboard away, whichever text field has it.
+@MainActor
+func dismissKeyboard() {
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+}
+
+/// The flat top bar every main screen uses, matching the chat screen:
+/// menu button and title on the left, optional buttons on the right.
+struct ScreenHeader<Trailing: View>: View {
+    @EnvironmentObject private var shell: AppShellState
+    let title: String
+    let trailing: Trailing
+
+    init(title: String, @ViewBuilder trailing: () -> Trailing) {
+        self.title = title
+        self.trailing = trailing()
+    }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            TopBarIconButton(systemImage: "sidebar.leading", accessibilityLabel: "Open menu") {
+                dismissKeyboard()
+                shell.openDrawer()
+            }
+            Text(title)
+                .font(.headline)
+                .lineLimit(1)
+                .padding(.leading, 2)
+            Spacer(minLength: 8)
+            trailing
+        }
+        .padding(.horizontal, 6)
+        .frame(height: 50)
+    }
+}
+
+extension ScreenHeader where Trailing == EmptyView {
+    init(title: String) {
+        self.title = title
+        self.trailing = EmptyView()
+    }
+}
+
+/// Wraps the Pro tools (Deep Research, Compare, Morning Brief) with the
+/// flat top bar, so the menu can always be opened from them.
+struct ToolScreen<Content: View>: View {
+    let title: String
+    let content: Content
+
+    init(title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ScreenHeader(title: title)
+            content
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background(PageMindDesign.appBackground.ignoresSafeArea())
+    }
+}
+
+/// Rounded search box used at the top of Library and Search.
+struct SearchField: View {
+    @Binding var text: String
+    let prompt: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 15))
+                .foregroundStyle(.secondary)
+            TextField(prompt, text: $text)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .font(.body)
+        .padding(.horizontal, 12)
+        .frame(height: 42)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(PageMindDesign.elevatedCard)
+        )
+    }
+}
+
 /// A plain icon button for PageMind's own top bars: thin icon, 44pt
 /// tap target, no glass bubble.
 struct TopBarIconButton: View {
@@ -335,11 +434,11 @@ struct AppShellView: View {
         case .browser:
             BrowserView()
         case .compare:
-            CompareView()
+            ToolScreen(title: "Compare models") { CompareView() }
         case .morningBrief:
-            MorningBriefView()
+            ToolScreen(title: "Morning Brief") { MorningBriefView() }
         case .deepResearch:
-            DeepResearchView()
+            ToolScreen(title: "Deep Research") { DeepResearchView() }
         }
     }
 

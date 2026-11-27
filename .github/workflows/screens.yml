@@ -54,14 +54,20 @@ jobs:
           shot() {
             name=$1
             screen=$2
+            wait=${3:-7}
             xcrun simctl terminate "$UDID" com.pagemind.app || true
             xcrun simctl launch "$UDID" com.pagemind.app -uiShot "$screen"
-            sleep 7
+            sleep "$wait"
             xcrun simctl io "$UDID" screenshot "shots/$name.png"
           }
-          shot 01-onboarding onboarding
+          # Warm-up: the first launch after boot is slow and the first
+          # picture came out black (still on the launch screen).
+          xcrun simctl launch "$UDID" com.pagemind.app -uiShot chat
+          sleep 25
+          shot 01-onboarding onboarding 10
           shot 02-chat chat
-          shot 03-keyboard keyboard
+          # The on-screen keyboard takes longer the first time.
+          shot 03-keyboard keyboard 15
           shot 04-conversation conversation
           shot 05-menu drawer
           shot 06-settings settings

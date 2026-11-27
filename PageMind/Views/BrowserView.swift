@@ -6,8 +6,9 @@ struct BrowserView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var pageContext: PageContextStore
 
-    @State private var addressText = "https://"
-    @State private var currentURL: URL? = URL(string: "https://example.com")
+    @State private var addressText = ""
+    /// Opens on DuckDuckGo, the same search PageMind's web search uses.
+    @State private var currentURL: URL? = URL(string: "https://duckduckgo.com")
     @State private var progress: Double = 0
     @State private var isLoading = false
     @State private var canGoBack = false
@@ -29,6 +30,7 @@ struct BrowserView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                ScreenHeader(title: "Browser")
                 addressBar
 
                 if progress > 0 && progress < 1 {
@@ -64,13 +66,8 @@ struct BrowserView: View {
 
                 actionBar
             }
-            .navigationTitle("Browser")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    SidebarToggleButton()
-                }
-            }
+            .background(PageMindDesign.appBackground.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showReaderSheet) {
                 readerSheet
             }
@@ -114,7 +111,7 @@ struct BrowserView: View {
             }
             .disabled(!canGoForward)
 
-            TextField("Enter URL or search", text: $addressText, onCommit: go)
+            TextField("Search or enter website", text: $addressText, onCommit: go)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(PageMindDesign.elevatedCard)

@@ -164,6 +164,7 @@ struct ChatView: View {
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
+                .tint(PageMindDesign.primaryText)
                 .accessibilityLabel("Share this chat")
             }
             TopBarIconButton(systemImage: "square.and.pencil", accessibilityLabel: "New chat") {
@@ -738,6 +739,7 @@ struct ChatView: View {
                 .frame(width: 36, height: 36)
                 .contentShape(Rectangle())
         }
+        .tint(Color.secondary)
         .accessibilityLabel("Add to message")
     }
 
@@ -1055,6 +1057,7 @@ private struct MessageRow: View {
                             .frame(width: 34, height: 30)
                             .contentShape(Rectangle())
                     }
+                    .tint(Color.secondary)
                     .accessibilityLabel("Share answer")
                 }
                 .padding(.leading, -8)
