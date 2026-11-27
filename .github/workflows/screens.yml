@@ -1,0 +1,110 @@
+name: Screens
+
+# Takes a picture of every main screen on the test iPhone (simulator)
+# so each screen can be checked before a build goes to the owner.
+# Manual-only, like the other builds.
+on:
+  workflow_dispatch:
+
+jobs:
+  screens:
+    name: Screenshot every screen
+    runs-on: macos-26
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Pick the simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          devices = json.load(sys.stdin)['devices']
+          for runtime, items in devices.items():
+              for d in items:
+                  if d['name'] == 'iPhone 17':
+                      print(d['udid']); sys.exit(0)
+          sys.exit('iPhone 17 simulator not found')
+          ")
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          echo "Using $UDID"
+
+      - name: Build for the simulator (Debug)
+        run: |
+          xcodebuild -project PageMind.xcodeproj \
+            -scheme PageMind \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            -configuration Debug \
+            -derivedDataPath build \
+            build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Boot, install, and photograph each screen
+        run: |
+          set -x
+          APP=build/Build/Products/Debug-iphonesimulator/PageMind.app
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl ui "$UDID" appearance dark
+          xcrun simctl status_bar "$UDID" override --time "9:41" \
+            --batteryState charged --batteryLevel 100 \
+            --wifiBars 3 --cellularBars 4 --operatorName "" || true
+          xcrun simctl install "$UDID" "$APP"
+          mkdir -p shots
+          shot() {
+            name=$1
+            screen=$2
+            xcrun simctl terminate "$UDID" com.pagemind.app || true
+            xcrun simctl launch "$UDID" com.pagemind.app -uiShot "$screen"
+            sleep 7
+            xcrun simctl io "$UDID" screenshot "shots/$name.png"
+          }
+          shot 01-onboarding onboarding
+          shot 02-chat chat
+          shot 03-keyboard keyboard
+          shot 04-conversation conversation
+          shot 05-menu drawer
+          shot 06-settings settings
+          shot 07-paywall paywall
+          shot 08-library library
+          shot 09-browser browser
+          shot 10-search search
+          shot 11-research research
+          shot 12-compare compare
+          shot 13-brief brief
+          ls -la shots
+
+      - name: Make contact sheets
+        run: |
+          python3 -m pip install --quiet --break-system-packages pillow || python3 -m pip install --quiet pillow
+          python3 - <<'EOF'
+          import glob
+          from PIL import Image, ImageDraw
+          files = sorted(glob.glob('shots/*.png'))
+          width = 390
+          per_sheet = 4
+          for start in range(0, len(files), per_sheet):
+              group = files[start:start + per_sheet]
+              images = []
+              for path in group:
+                  image = Image.open(path).convert('RGB')
+                  height = int(image.height * width / image.width)
+                  images.append((path, image.resize((width, height))))
+              sheet_height = max(i.height for _, i in images) + 30
+              sheet = Image.new('RGB', (width * len(images) + 10 * (len(images) - 1), sheet_height), 'white')
+              draw = ImageDraw.Draw(sheet)
+              for index, (path, image) in enumerate(images):
+                  x = index * (width + 10)
+                  draw.text((x + 6, 8), path.split('/')[-1], fill='black')
+                  sheet.paste(image, (x, 30))
+              sheet.save(f'shots/sheet-{start // per_sheet + 1}.jpg', quality=85)
+          EOF
+          ls -la shots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screens
+          path: shots
+          retention-days: 7

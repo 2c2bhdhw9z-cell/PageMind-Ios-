@@ -3,18 +3,23 @@ import SwiftData
 import UniformTypeIdentifiers
 import PhotosUI
 
+/// The chat screen, laid out like SurfMind's: a plain top bar (menu,
+/// title, share, new chat), a centred greeting with the model chip and
+/// the message box underneath on the empty screen, and the same message
+/// box pinned to the bottom once a conversation starts.
 struct ChatView: View {
     @Environment(\.modelContext) private var modelContext
     // The single app-level settings instance, injected by PageMindApp.
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var pageContext: PageContextStore
+    @EnvironmentObject private var shell: AppShellState
 
     @Query(sort: \SavedPage.savedAt, order: .reverse) private var savedPages: [SavedPage]
 
     /// The view model is owned by the app shell (AppShellView) so the
-    /// conversation survives switching to another sidebar destination
-    /// and back. `openChat` / `newChatNonce` are how the sidebar drives
-    /// this view: open a recent chat, or start a fresh one.
+    /// conversation survives switching to another screen and back.
+    /// `openChat` / `newChatNonce` are how the menu drives this view:
+    /// open a recent chat, or start a fresh one.
     @ObservedObject private var viewModel: ChatViewModel
     private let openChat: Chat?
     private let newChatNonce: UUID
@@ -32,13 +37,15 @@ struct ChatView: View {
     @State private var photoPickerItems: [PhotosPickerItem] = []
     @State private var useWebSearch = false
     @State private var useWebFetch = false
-    /// What the chat is doing right now, shown above the composer while
-    /// a page is being fetched or a web search is running — the same
-    /// narration pattern SurfMind uses ("Reading…", "Searching…").
+    /// What the chat is doing right now ("Searching the web…"), shown
+    /// under the message box while a page is fetched or a search runs.
     @State private var statusText: String?
     @State private var showSettingsSheet = false
     @State private var showModelPicker = false
     @State private var modelSearchText = ""
+    /// Whether the message box has the keyboard. Tapping outside a text
+    /// field, dragging the chat, or the keyboard button all set it false.
+    @FocusState private var composerFocused: Bool
 
     init(viewModel: ChatViewModel, openChat: Chat? = nil, newChatNonce: UUID = UUID()) {
         self.viewModel = viewModel
@@ -49,71 +56,26 @@ struct ChatView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                topBar
+
                 if viewModel.messages.isEmpty {
-                    // Chat-first home: greeting, model picker, composer.
                     homeView
                 } else {
                     messageList
-
-                    if let error = viewModel.errorMessage {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(error)
-                                .font(.footnote)
-                                .foregroundStyle(.red)
-                                .lineLimit(nil)
-                                .fixedSize(horizontal: false, vertical: true)
-                            if let hint = viewModel.errorHint {
-                                Text(hint)
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(nil)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            if error.contains("No API key") || error.contains("401") {
-                                Button("Add or check the API key in Settings") {
-                                    showSettingsSheet = true
-                                }
-                                .font(.footnote)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                        .padding(.vertical, 6)
+                    errorBanner
+                    statusLine
+                    VStack(spacing: 8) {
+                        controlsRow
+                        attachedItemsBar
+                        composerCard
                     }
-
-                    if let statusText {
-                        HStack {
-                            ProgressView()
-                            Text(statusText)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(nil)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.horizontal)
-                        .padding(.vertical, 4)
-                    }
-
-                    attachedPagesBar
-                    composer
+                    .padding(.horizontal, 12)
+                    .padding(.top, 6)
+                    .padding(.bottom, 8)
                 }
             }
-            .background(PageMindDesign.appBackground)
-            .navigationTitle(viewModel.currentChat?.title ?? "Chat")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    SidebarToggleButton()
-                }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        startNewChat()
-                    } label: {
-                        Label("New Chat", systemImage: "square.and.pencil")
-                    }
-                }
-            }
+            .background(PageMindDesign.appBackground.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showAttachSheet) {
                 attachPageSheet
             }
@@ -139,7 +101,7 @@ struct ChatView: View {
                 Task { await importPhotos(photoPickerItems) }
             }
             .sheet(isPresented: $showSettingsSheet) {
-                SettingsView()
+                SettingsView(startPage: .apiKeys)
             }
             .onAppear {
                 viewModel.configure(with: settings)
@@ -147,12 +109,20 @@ struct ChatView: View {
                 Task {
                     _ = await catalog.fetchOpenRouterModels()
                 }
+                #if DEBUG
+                if ScreenshotMode.screen == "keyboard" {
+                    Task {
+                        try? await Task.sleep(for: .seconds(1))
+                        composerFocused = true
+                    }
+                }
+                #endif
             }
-            // Sidebar asked to open a recent chat.
+            // The menu asked to open a recent chat.
             .onChange(of: openChat?.id) { _, _ in
                 openRequestedChatIfNeeded()
             }
-            // Sidebar asked for a brand-new chat.
+            // The menu asked for a brand-new chat.
             .onChange(of: newChatNonce) { _, _ in
                 startNewChat()
             }
@@ -170,28 +140,78 @@ struct ChatView: View {
         }
     }
 
+    // MARK: - Top bar
+
+    /// Plain top bar like SurfMind's: menu button and chat title on the
+    /// left, share (once there is a conversation) and new chat on the
+    /// right. No large title, no glass bubbles.
+    private var topBar: some View {
+        HStack(spacing: 0) {
+            TopBarIconButton(systemImage: "sidebar.leading", accessibilityLabel: "Open menu") {
+                composerFocused = false
+                shell.openDrawer()
+            }
+            Text(chatTitle)
+                .font(.headline)
+                .lineLimit(1)
+                .padding(.leading, 2)
+            Spacer(minLength: 8)
+            if !viewModel.messages.isEmpty {
+                ShareLink(item: conversationText) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(PageMindDesign.primaryText.opacity(0.85))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("Share this chat")
+            }
+            TopBarIconButton(systemImage: "square.and.pencil", accessibilityLabel: "New chat") {
+                startNewChat()
+            }
+        }
+        .padding(.horizontal, 6)
+        .frame(height: 50)
+    }
+
+    private var chatTitle: String {
+        guard !viewModel.messages.isEmpty,
+              let title = viewModel.currentChat?.title,
+              !title.isEmpty else { return "New chat" }
+        return title
+    }
+
+    /// The whole conversation as plain text, for the share button.
+    private var conversationText: String {
+        viewModel.messages
+            .map { ($0.role == "user" ? "You: " : "PageMind: ") + $0.content }
+            .joined(separator: "\n\n")
+    }
+
     // MARK: - Message list
 
     private var messageList: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 12) {
+                LazyVStack(alignment: .leading, spacing: 22) {
                     ForEach(viewModel.messages) { message in
                         MessageRow(message: message)
                             .id(message.id)
                     }
                     if viewModel.isStreaming {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 8) {
                             ProgressView()
+                                .controlSize(.small)
                             Text("Thinking…")
-                                .font(.footnote)
+                                .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
-                        .padding(.horizontal)
                     }
                 }
-                .padding()
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
+            .scrollDismissesKeyboard(.interactively)
             .onChange(of: viewModel.messages.last?.content) { _, _ in
                 if let last = viewModel.messages.last {
                     withAnimation {
@@ -202,130 +222,241 @@ struct ChatView: View {
         }
     }
 
-    // MARK: - Chat home (empty state)
+    @ViewBuilder
+    private var errorBanner: some View {
+        if let error = viewModel.errorMessage {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle")
+                    Text(error)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .font(.subheadline)
+                .foregroundStyle(.red)
+                if let hint = viewModel.errorHint {
+                    Text(hint)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if error.contains("No API key") || error.contains("401") {
+                    Button("Add or check the API key in Settings") {
+                        showSettingsSheet = true
+                    }
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(PageMindDesign.brandIndigo)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.red.opacity(0.1))
+            )
+            .padding(.horizontal, 12)
+            .padding(.top, 6)
+        }
+    }
 
-    /// Time-aware greeting for the chat home.
-    private var greeting: String {
+    @ViewBuilder
+    private var statusLine: some View {
+        if let statusText {
+            HStack(spacing: 8) {
+                ProgressView()
+                    .controlSize(.small)
+                Text(statusText)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 4)
+        }
+    }
+
+    // MARK: - Empty chat (home)
+
+    /// Time-aware greeting, like SurfMind's "Good evening 🌙".
+    private var greetingLine: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
-        case 5..<12: return "Good morning"
-        case 12..<17: return "Good afternoon"
-        default: return "Good evening"
+        case 5..<12: return "Good morning ☀️"
+        case 12..<17: return "Good afternoon 🌤️"
+        default: return "Good evening 🌙"
         }
     }
 
-    /// Chat-first home: greeting, model picker pill, quick actions,
-    /// and the same composer used once a conversation starts.
-    ///
-    /// The composer is pinned to the bottom of the screen, outside the
-    /// ScrollView: on the first version it lived inside the scroll
-    /// content and sat below the fold, half cut off at the bottom edge.
+    /// The empty chat: greeting centred on the screen, the model chip
+    /// and message box right under it, then shortcuts to the things
+    /// PageMind can read.
     private var homeView: some View {
-        VStack(spacing: 0) {
+        GeometryReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: PageMindDesign.rowSpacing) {
-                    Spacer(minLength: 24)
+                VStack(spacing: 16) {
+                    Text(greetingLine)
+                        .font(.title)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .padding(.bottom, 8)
 
-                    // Brand mark above the greeting — the home screen's
-                    // designed anchor, matching the app icon.
-                    Image(systemName: "text.bubble.fill")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 52, height: 52)
-                        .background(PageMindDesign.brandGradient)
-                        .clipShape(RoundedRectangle(cornerRadius: 15))
-                        .shadow(color: PageMindDesign.brandIndigo.opacity(0.4), radius: 16, x: 0, y: 6)
-
-                    Text(greeting)
-                        .font(.largeTitle.bold())
-                        .lineLimit(nil)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    Text("Ask about a page, a PDF, a photo, or anything else.")
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(nil)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    modelPickerPill
-
-                    // Suggestion chips, stacked full-width: the
-                    // horizontal scroll row ran the second chip off the
-                    // right edge of the screen, half cut off.
-                    VStack(alignment: .leading, spacing: 8) {
-                        suggestionChip("Attach a saved page", systemImage: "books.vertical") {
-                            showAttachSheet = true
-                        }
-                        suggestionChip("Ask with web search", systemImage: "magnifyingglass") {
-                            useWebSearch = true
-                        }
+                    VStack(spacing: 10) {
+                        controlsRow
+                        attachedItemsBar
+                        composerCard
                     }
 
-                    if settings.apiKey(for: settings.selectedProvider) == nil
-                        && settings.selectedProvider.requiresKey {
-                        Button("Add an API key — or use OpenRouter free models") {
-                            showSettingsSheet = true
-                        }
-                        .font(.footnote)
-                    }
+                    statusLine
 
-                    Spacer(minLength: 16)
+                    suggestionChips
+
+                    if needsAPIKey {
+                        keyNudge
+                    }
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 24)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
             }
-
-            attachedPagesBar
-            composer
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 
-    /// One suggestion chip on the chat home. Full-width so it can
-    /// never run off the edge of the screen.
+    private var suggestionChips: some View {
+        FlowLayout(spacing: 8, lineSpacing: 8) {
+            suggestionChip("Summarize a saved page", systemImage: "doc.text") {
+                showAttachSheet = true
+            }
+            suggestionChip("Search the web", systemImage: "globe") {
+                useWebSearch = true
+                composerFocused = true
+            }
+            suggestionChip("Chat with a PDF", systemImage: "doc.richtext") {
+                showPDFImporter = true
+            }
+            suggestionChip("Ask about a photo", systemImage: "photo") {
+                showPhotoPicker = true
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private func suggestionChip(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: systemImage)
-                    .foregroundStyle(PageMindDesign.brandIndigo)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
                 Text(title)
-                Spacer()
+                    .lineLimit(1)
             }
             .font(.subheadline)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 11)
-            .background(PageMindDesign.elevatedCard)
-            .clipShape(Capsule())
+            .foregroundStyle(PageMindDesign.primaryText.opacity(0.9))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Capsule().stroke(Color.primary.opacity(0.14), lineWidth: 1))
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
     }
 
-    /// Current-model pill. Tap opens the model list; picking a model
-    /// writes AppSettings.selectedModel, which reconfigures the chat.
-    /// Elevated card with an indigo ring — a real control, not a grey
-    /// blob.
-    private var modelPickerPill: some View {
-        Button { showModelPicker = true } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "sparkles")
+    private var needsAPIKey: Bool {
+        settings.apiKey(for: settings.selectedProvider) == nil
+            && settings.selectedProvider.requiresKey
+    }
+
+    /// Shown until an AI key is saved: one tap opens Settings straight
+    /// on the API keys page.
+    private var keyNudge: some View {
+        Button {
+            showSettingsSheet = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "key")
+                    .font(.system(size: 16))
                     .foregroundStyle(PageMindDesign.brandIndigo)
-                Text(viewModel.selectedModel)
-                    .fontWeight(.semibold)
-                    .lineLimit(1)
-                Image(systemName: "chevron.down")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .frame(width: 32, height: 32)
+                    .background(Circle().fill(PageMindDesign.brandIndigo.opacity(0.15)))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Add a free AI key to start")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(PageMindDesign.primaryText)
+                    Text("OpenRouter has free models. It takes about two minutes.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.tertiary)
             }
-            .font(.subheadline)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 9)
-            .background(PageMindDesign.elevatedCard)
-            .clipShape(Capsule())
-            .overlay(
-                Capsule()
-                    .stroke(PageMindDesign.brandIndigo.opacity(0.35), lineWidth: 1)
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(PageMindDesign.elevatedCard)
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Model chip row
+
+    /// Model chip and the VS (compare) chip, like SurfMind's row above
+    /// its message box, plus a "Free" tag when the model costs nothing.
+    private var controlsRow: some View {
+        HStack(spacing: 8) {
+            Button {
+                composerFocused = false
+                showModelPicker = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkle")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(PageMindDesign.brandIndigo)
+                    Text(ModelDisplayName.short(viewModel.selectedModel))
+                        .lineLimit(1)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(PageMindDesign.primaryText)
+                .padding(.horizontal, 12)
+                .frame(height: 34)
+                .background(Capsule().fill(PageMindDesign.elevatedCard))
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Model: \(viewModel.selectedModel)")
+
+            Button {
+                composerFocused = false
+                shell.selection = .compare
+            } label: {
+                Text("VS")
+                    .font(.footnote.weight(.heavy))
+                    .italic()
+                    .foregroundStyle(PageMindDesign.primaryText)
+                    .frame(width: 42, height: 34)
+                    .background(Capsule().fill(PageMindDesign.elevatedCard))
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Compare two models")
+
+            Spacer(minLength: 0)
+
+            if ModelDisplayName.isFree(viewModel.selectedModel) {
+                Text("Free")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.green)
+                    .padding(.horizontal, 10)
+                    .frame(height: 26)
+                    .background(Capsule().stroke(Color.green.opacity(0.5), lineWidth: 1))
+            }
+        }
     }
 
     /// Model picker: search box, a Favorites section with a star toggle
@@ -342,6 +473,7 @@ struct ChatView: View {
                             modelRow(model)
                         }
                     }
+                    .listRowBackground(PageMindDesign.elevatedCard)
                 }
                 Section {
                     ForEach(filteredModels, id: \.self) { model in
@@ -350,16 +482,20 @@ struct ChatView: View {
                 } header: {
                     Text(settings.selectedProvider.displayName)
                 } footer: {
-                    Text("Free models come from OpenRouter. The model you pick is used for the next reply. Vision means this provider accepts photo attachments — a text-only model still returns a provider error.")
-                        .lineLimit(nil)
+                    Text("Free models come from OpenRouter. The model you pick is used for the next reply. Vision means this provider accepts photos.")
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .listRowBackground(PageMindDesign.elevatedCard)
                 Section {
                     Button("Refresh model list") {
                         Task { _ = await catalog.fetchOpenRouterModels() }
                     }
+                    .foregroundStyle(PageMindDesign.brandIndigo)
                 }
+                .listRowBackground(PageMindDesign.elevatedCard)
             }
+            .scrollContentBackground(.hidden)
+            .background(PageMindDesign.appBackground)
             .searchable(text: $modelSearchText, prompt: "Search models")
             .navigationTitle("Choose a model")
             .navigationBarTitleDisplayMode(.inline)
@@ -380,12 +516,16 @@ struct ChatView: View {
                 showModelPicker = false
             } label: {
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(ModelDisplayName.short(model))
+                            .font(.body)
+                            .lineLimit(1)
                         Text(model)
-                            .lineLimit(nil)
-                            .fixedSize(horizontal: false, vertical: true)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
                         HStack(spacing: 6) {
-                            if model == "openrouter/free" || model.hasSuffix(":free") {
+                            if ModelDisplayName.isFree(model) {
                                 capabilityBadge("Free")
                             }
                             if viewModel.providerSupportsVision {
@@ -399,6 +539,7 @@ struct ChatView: View {
                             .foregroundStyle(PageMindDesign.brandIndigo)
                     }
                 }
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -444,210 +585,220 @@ struct ChatView: View {
         return models
     }
 
-    // MARK: - Attached pages + composer
+    // MARK: - Attachments + message box
 
-    private var attachedPagesBar: some View {
-        Group {
-            if !attachedPages.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(attachedPages) { page in
-                            HStack(spacing: 4) {
-                                Text(page.title.isEmpty ? page.url : page.title)
-                                    .lineLimit(1)
-                                Button {
-                                    attachedPages.removeAll { $0.id == page.id }
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                }
-                            }
-                            .font(.footnote)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(PageMindDesign.elevatedCard)
-                            .clipShape(Capsule())
+    private var hasAttachments: Bool {
+        !attachedPages.isEmpty || !attachedPDFNames.isEmpty || !attachedImages.isEmpty
+    }
+
+    /// Attached pages, PDFs and photos as removable chips that wrap onto
+    /// new lines instead of running off the screen.
+    @ViewBuilder
+    private var attachedItemsBar: some View {
+        if hasAttachments {
+            VStack(alignment: .leading, spacing: 6) {
+                FlowLayout(spacing: 6, lineSpacing: 6) {
+                    ForEach(attachedPages) { page in
+                        attachmentChip(page.title.isEmpty ? page.url : page.title, systemImage: "doc.text") {
+                            attachedPages.removeAll { $0.id == page.id }
                         }
                     }
-                    .padding(.horizontal)
-                }
-                .padding(.vertical, 4)
-            }
-            if !attachedPDFNames.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(Array(attachedPDFNames.enumerated()), id: \.offset) { index, name in
-                            HStack(spacing: 4) {
-                                Text(name)
-                                    .lineLimit(1)
-                                Button {
-                                    attachedPDFTexts.remove(at: index)
-                                    attachedPDFNames.remove(at: index)
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                }
-                            }
-                            .font(.footnote)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(PageMindDesign.elevatedCard)
-                            .clipShape(Capsule())
+                    ForEach(Array(attachedPDFNames.enumerated()), id: \.offset) { index, name in
+                        attachmentChip(name, systemImage: "doc.richtext") {
+                            guard index < attachedPDFNames.count else { return }
+                            attachedPDFTexts.remove(at: index)
+                            attachedPDFNames.remove(at: index)
                         }
                     }
-                    .padding(.horizontal)
-                }
-                .padding(.vertical, 4)
-            }
-            if !attachedImages.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(attachedImages) { image in
-                            HStack(spacing: 4) {
-                                Image(systemName: "photo")
-                                Text(image.fileName)
-                                    .lineLimit(1)
-                                Button {
-                                    attachedImages.removeAll { $0.id == image.id }
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                }
-                            }
-                            .font(.footnote)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(PageMindDesign.elevatedCard)
-                            .clipShape(Capsule())
+                    ForEach(attachedImages) { image in
+                        attachmentChip(image.fileName, systemImage: "photo") {
+                            attachedImages.removeAll { $0.id == image.id }
                         }
                     }
-                    .padding(.horizontal)
                 }
-                .padding(.vertical, 4)
+                if !attachedImages.isEmpty && !viewModel.providerSupportsVision {
+                    Text("This provider can't read photos, so the photo will be ignored. Switch to OpenAI, Anthropic, Gemini or a vision model.")
+                        .font(.footnote)
+                        .foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
-            if !attachedImages.isEmpty && !viewModel.providerSupportsVision {
-                Text("This provider does not support image input — the photo will be ignored. Switch to OpenAI, Anthropic, Gemini, or a vision model.")
-                    .font(.footnote)
-                    .foregroundStyle(.orange)
-                    .padding(.horizontal)
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    /// The composer's "+" menu: everything that can be added to a message
-    /// in one place, the way SurfMind organises it — photo, PDF file,
-    /// a page from the Library, and the per-message web search / web
-    /// fetch toggles. The toggles show a checkmark when on.
-    private var composer: some View {
-        VStack(spacing: 8) {
-            HStack {
-                Menu {
-                    Button {
-                        showPhotoPicker = true
-                    } label: {
-                        Label("Attach photo", systemImage: "photo")
-                    }
-                    .disabled(attachedImages.count >= VisionImagePrep.maxImagesPerChat)
-
-                    Button {
-                        showPDFImporter = true
-                    } label: {
-                        Label("Attach file (PDF)", systemImage: "doc.fill")
-                    }
-
-                    Button {
-                        showAttachSheet = true
-                    } label: {
-                        Label("Add from Library", systemImage: "books.vertical")
-                    }
-
-                    Divider()
-
-                    Toggle("Web search", isOn: $useWebSearch)
-                    Toggle("Web fetch", isOn: $useWebFetch)
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
-                        .frame(width: 36, height: 36)
-                        .background(PageMindDesign.brandGradient)
-                        .clipShape(Circle())
-                        .shadow(color: PageMindDesign.brandIndigo.opacity(0.35), radius: 8, x: 0, y: 3)
-                }
-                .accessibilityLabel("Add to message")
-
-                if useWebSearch || useWebFetch {
-                    HStack(spacing: 4) {
-                        if useWebSearch {
-                            Text("Web search")
-                                .font(.caption2)
-                                .bold()
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(PageMindDesign.brandIndigo.opacity(0.15))
-                                .foregroundStyle(PageMindDesign.brandIndigo)
-                                .clipShape(Capsule())
-                        }
-                        if useWebFetch {
-                            Text("Web fetch")
-                                .font(.caption2)
-                                .bold()
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 3)
-                                .background(PageMindDesign.brandIndigo.opacity(0.15))
-                                .foregroundStyle(PageMindDesign.brandIndigo)
-                                .clipShape(Capsule())
-                        }
-                    }
-                    .lineLimit(1)
-                }
-
-                Spacer()
-
-                Text(viewModel.selectedModel)
-                    .font(.caption)
+    private func attachmentChip(_ title: String, systemImage: String, onRemove: @escaping () -> Void) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: systemImage)
+                .font(.system(size: 12))
+                .foregroundStyle(PageMindDesign.brandIndigo)
+            Text(title)
+                .lineLimit(1)
+                .frame(maxWidth: 190, alignment: .leading)
+            Button(action: onRemove) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    .frame(width: 18, height: 18)
+                    .background(Circle().fill(PageMindDesign.subtleFill))
             }
-            .padding(.horizontal)
+            .buttonStyle(.plain)
+            .accessibilityLabel("Remove \(title)")
+        }
+        .font(.footnote)
+        .padding(.leading, 10)
+        .padding(.trailing, 6)
+        .padding(.vertical, 6)
+        .background(Capsule().fill(PageMindDesign.subtleCard))
+    }
 
-            HStack(alignment: .bottom) {
-                TextField("Ask PageMind anything…", text: $draft, axis: .vertical)
-                    .lineLimit(1...5)
-                    .padding(.vertical, 11)
-                    .padding(.horizontal, 14)
-                    .background(PageMindDesign.elevatedCard)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                    )
-                    .disabled(viewModel.isStreaming)
+    /// The message box: a rounded card with the text field on top and
+    /// a row of small controls underneath — "+" (photo, PDF, Library,
+    /// web fetch), the web search globe, a hide-keyboard button while
+    /// typing, and the send / stop button.
+    private var composerCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            TextField("Ask PageMind anything…", text: $draft, axis: .vertical)
+                .font(.body)
+                .lineLimit(1...6)
+                .focused($composerFocused)
+                .disabled(viewModel.isStreaming)
 
-                if viewModel.isStreaming {
-                    Button("Stop") {
-                        viewModel.cancelStreaming()
-                    }
-                    .frame(width: 36, height: 36)
-                } else {
+            HStack(spacing: 4) {
+                plusMenu
+                webSearchButton
+                if useWebFetch {
+                    Text("Reads links")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(PageMindDesign.brandIndigo)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Capsule().fill(PageMindDesign.brandIndigo.opacity(0.15)))
+                }
+                Spacer(minLength: 0)
+                if composerFocused {
                     Button {
-                        sendDraft()
+                        composerFocused = false
                     } label: {
-                        Image(systemName: "arrow.up")
-                            .font(.body)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .frame(width: 36, height: 36)
-                            .background(
-                                draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                    ? AnyShapeStyle(Color.secondary.opacity(0.3))
-                                    : AnyShapeStyle(PageMindDesign.brandGradient)
-                            )
-                            .clipShape(Circle())
+                        Image(systemName: "keyboard.chevron.compact.down")
+                            .font(.system(size: 17))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 38, height: 36)
+                            .contentShape(Rectangle())
                     }
-                    .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Hide keyboard")
+                }
+                sendButton
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(PageMindDesign.elevatedCard)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(PageMindDesign.hairline, lineWidth: 1)
+        )
+    }
+
+    /// Everything that can be added to a message, in one menu.
+    private var plusMenu: some View {
+        Menu {
+            Button {
+                showPhotoPicker = true
+            } label: {
+                Label("Attach photo", systemImage: "photo")
+            }
+            .disabled(attachedImages.count >= VisionImagePrep.maxImagesPerChat)
+
+            Button {
+                showPDFImporter = true
+            } label: {
+                Label("Attach file (PDF)", systemImage: "doc.fill")
+            }
+
+            Button {
+                showAttachSheet = true
+            } label: {
+                Label("Add from Library", systemImage: "books.vertical")
+            }
+
+            Divider()
+
+            Toggle("Web search", isOn: $useWebSearch)
+            Toggle("Read links in my message", isOn: $useWebFetch)
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 19, weight: .regular))
+                .foregroundStyle(.secondary)
+                .frame(width: 36, height: 36)
+                .contentShape(Rectangle())
+        }
+        .accessibilityLabel("Add to message")
+    }
+
+    private var webSearchButton: some View {
+        Button {
+            useWebSearch.toggle()
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "globe")
+                    .font(.system(size: 16))
+                if useWebSearch {
+                    Text("Search")
+                        .font(.footnote.weight(.semibold))
                 }
             }
-            .padding(.horizontal)
-            .padding(.bottom, 8)
+            .foregroundStyle(useWebSearch ? PageMindDesign.brandIndigo : .secondary)
+            .padding(.horizontal, useWebSearch ? 10 : 0)
+            .frame(minWidth: 36, minHeight: 32)
+            .background(
+                Capsule().fill(useWebSearch ? PageMindDesign.brandIndigo.opacity(0.15) : Color.clear)
+            )
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(useWebSearch ? "Web search is on" : "Web search is off")
+    }
+
+    @ViewBuilder
+    private var sendButton: some View {
+        if viewModel.isStreaming {
+            Button {
+                viewModel.cancelStreaming()
+            } label: {
+                Image(systemName: "stop.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(PageMindDesign.appBackground)
+                    .frame(width: 34, height: 34)
+                    .background(Circle().fill(PageMindDesign.primaryText))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Stop")
+        } else {
+            let canSend = !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            Button {
+                sendDraft()
+            } label: {
+                Image(systemName: "arrow.up")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(canSend ? Color.white : Color.secondary)
+                    .frame(width: 34, height: 34)
+                    .background(
+                        Circle().fill(
+                            canSend
+                                ? AnyShapeStyle(PageMindDesign.brandGradient)
+                                : AnyShapeStyle(PageMindDesign.subtleCard)
+                        )
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(!canSend)
+            .accessibilityLabel("Send")
         }
     }
 
@@ -847,65 +998,259 @@ struct ChatView: View {
     }
 }
 
-// MARK: - Message row (Markdown-ish rendering)
+// MARK: - Message row
 
+/// One message. Yours sit on the right in a rounded bubble; PageMind's
+/// answers use the full width with no bubble, followed by numbered
+/// source chips and copy / share buttons, the way modern chat apps
+/// (and SurfMind) show them.
 private struct MessageRow: View {
     let message: ChatMessage
+    @State private var copied = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        if message.role == "user" {
             HStack {
-                Text(message.role == "assistant" ? "PageMind" : "You")
-                    .font(.caption)
-                    .bold()
-                    .foregroundStyle(
-                        message.role == "assistant"
-                            ? PageMindDesign.brandIndigo
-                            : .secondary
-                    )
-                Spacer()
-                Button {
-                    #if os(iOS)
-                    UIPasteboard.general.string = message.content
-                    #endif
-                } label: {
-                    Label("Copy", systemImage: "doc.on.doc")
-                        .font(.caption)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-            }
-
-            // Markdown-ish: render real Markdown when it parses, fall back
-            // to plain text. AttributedString(markdown:) is the only
-            // dependency-free option on iOS 17.
-            if let attributed = try? AttributedString(markdown: message.content) {
-                Text(attributed)
-                    .textSelection(.enabled)
-            } else {
+                Spacer(minLength: 56)
                 Text(message.content)
+                    .font(.body)
                     .textSelection(.enabled)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(PageMindDesign.elevatedCard)
+                    )
             }
+        } else {
+            VStack(alignment: .leading, spacing: 12) {
+                MarkdownText(content: message.content)
 
-            if !message.citations.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Sources")
-                        .font(.caption)
-                        .bold()
-                        .foregroundStyle(.secondary)
-                    ForEach(message.citations) { citation in
-                        Link(citation.title, destination: URL(string: citation.url) ?? URL(string: "https://example.com")!)
-                            .font(.caption)
+                if !message.citations.isEmpty {
+                    sources
+                }
+
+                HStack(spacing: 2) {
+                    Button {
+                        UIPasteboard.general.string = message.content
+                        copied = true
+                        Task {
+                            try? await Task.sleep(for: .seconds(1.5))
+                            copied = false
+                        }
+                    } label: {
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 34, height: 30)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(copied ? "Copied" : "Copy answer")
+
+                    ShareLink(item: message.content) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 34, height: 30)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Share answer")
+                }
+                .padding(.leading, -8)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Numbered source chips; tapping one opens the page.
+    private var sources: some View {
+        FlowLayout(spacing: 6, lineSpacing: 6) {
+            ForEach(Array(message.citations.enumerated()), id: \.offset) { index, citation in
+                if let url = URL(string: citation.url) {
+                    Link(destination: url) {
+                        HStack(spacing: 6) {
+                            Text("\(index + 1)")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 18, height: 18)
+                                .background(Circle().fill(PageMindDesign.brandIndigo))
+                            Text(citation.title.isEmpty ? (url.host ?? citation.url) : citation.title)
+                                .font(.footnote)
+                                .lineLimit(1)
+                                .frame(maxWidth: 220, alignment: .leading)
+                        }
+                        .foregroundStyle(PageMindDesign.primaryText)
+                        .padding(.leading, 5)
+                        .padding(.trailing, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(PageMindDesign.elevatedCard))
                     }
                 }
             }
         }
-        .padding(12)
-        .background(
-            message.role == "assistant"
-                ? PageMindDesign.elevatedCard
-                : PageMindDesign.brandIndigo.opacity(0.16)
+    }
+}
+
+// MARK: - Markdown
+
+/// Shows the Markdown that AI models write: headings, bullet and
+/// numbered lists, quotes, code blocks, and inline bold, italic, code
+/// and links. SwiftUI's Text only understands inline Markdown and runs
+/// paragraphs and list items together, so blocks are split out here.
+struct MarkdownText: View {
+    let content: String
+
+    private enum Block {
+        case heading(String, level: Int)
+        case bullet(String)
+        case numbered(String, text: String)
+        case quote(String)
+        case code(String)
+        case paragraph(String)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array(Self.blocks(from: content).enumerated()), id: \.offset) { _, block in
+                view(for: block)
+            }
+        }
+        .textSelection(.enabled)
+    }
+
+    @ViewBuilder
+    private func view(for block: Block) -> some View {
+        switch block {
+        case .heading(let text, let level):
+            Self.inline(text)
+                .font(level <= 2 ? .title3.weight(.semibold) : .headline)
+                .padding(.top, 4)
+        case .bullet(let text):
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("•")
+                    .foregroundStyle(.secondary)
+                Self.inline(text)
+                    .font(.body)
+            }
+        case .numbered(let number, let text):
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(number)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                Self.inline(text)
+                    .font(.body)
+            }
+        case .quote(let text):
+            HStack(spacing: 10) {
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(PageMindDesign.brandIndigo.opacity(0.6))
+                    .frame(width: 3)
+                Self.inline(text)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
+        case .code(let code):
+            ScrollView(.horizontal, showsIndicators: false) {
+                Text(code)
+                    .font(.system(.footnote, design: .monospaced))
+                    .padding(12)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(PageMindDesign.elevatedCard)
+            )
+        case .paragraph(let text):
+            Self.inline(text)
+                .font(.body)
+        }
+    }
+
+    /// Inline Markdown (bold, italic, `code`, links) with line breaks kept.
+    private static func inline(_ text: String) -> Text {
+        let options = AttributedString.MarkdownParsingOptions(
+            interpretedSyntax: .inlineOnlyPreservingWhitespace
         )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        if let attributed = try? AttributedString(markdown: text, options: options) {
+            return Text(attributed)
+        }
+        return Text(text)
+    }
+
+    private static func blocks(from content: String) -> [Block] {
+        var blocks: [Block] = []
+        var paragraph: [String] = []
+        var codeLines: [String] = []
+        var inCode = false
+
+        func flushParagraph() {
+            if !paragraph.isEmpty {
+                blocks.append(.paragraph(paragraph.joined(separator: "\n")))
+                paragraph = []
+            }
+        }
+
+        for rawLine in content.components(separatedBy: "\n") {
+            let line = rawLine.trimmingCharacters(in: .whitespaces)
+
+            if line.hasPrefix("```") {
+                if inCode {
+                    blocks.append(.code(codeLines.joined(separator: "\n")))
+                    codeLines = []
+                    inCode = false
+                } else {
+                    flushParagraph()
+                    inCode = true
+                }
+                continue
+            }
+            if inCode {
+                codeLines.append(rawLine)
+                continue
+            }
+            if line.isEmpty {
+                flushParagraph()
+                continue
+            }
+            if line.hasPrefix("#") {
+                let level = line.prefix(while: { $0 == "#" }).count
+                let rest = line.dropFirst(level)
+                if level <= 6, rest.hasPrefix(" ") {
+                    let text = rest.trimmingCharacters(in: .whitespaces)
+                    if !text.isEmpty {
+                        flushParagraph()
+                        blocks.append(.heading(text, level: level))
+                        continue
+                    }
+                }
+            }
+            if line.hasPrefix("- ") || line.hasPrefix("* ") || line.hasPrefix("• ") {
+                flushParagraph()
+                blocks.append(.bullet(String(line.dropFirst(2))))
+                continue
+            }
+            if line.hasPrefix("> ") {
+                flushParagraph()
+                blocks.append(.quote(String(line.dropFirst(2))))
+                continue
+            }
+            if let dot = line.firstIndex(of: "."),
+               dot > line.startIndex,
+               line[line.startIndex..<dot].allSatisfy(\.isNumber),
+               line[line.index(after: dot)...].hasPrefix(" ") {
+                flushParagraph()
+                let textStart = line.index(dot, offsetBy: 2)
+                blocks.append(.numbered(String(line[...dot]), text: String(line[textStart...])))
+                continue
+            }
+            paragraph.append(line)
+        }
+        // An answer still streaming in can end inside a code block.
+        if inCode, !codeLines.isEmpty {
+            blocks.append(.code(codeLines.joined(separator: "\n")))
+        }
+        flushParagraph()
+        return blocks
     }
 }
