@@ -88,6 +88,9 @@ final class SavedPage {
     var savedAt: Date
     var collectionID: UUID?
     var tags: [String]
+    /// Starred by the user in the Library (filter pill "Favorites").
+    /// Added with a default so existing saved pages migrate as unfavorited.
+    var isFavorite: Bool = false
 
     init(
         id: UUID = UUID(),
@@ -97,7 +100,8 @@ final class SavedPage {
         excerpt: String = "",
         savedAt: Date = Date(),
         collectionID: UUID? = nil,
-        tags: [String] = []
+        tags: [String] = [],
+        isFavorite: Bool = false
     ) {
         self.id = id
         self.url = url
@@ -107,6 +111,22 @@ final class SavedPage {
         self.savedAt = savedAt
         self.collectionID = collectionID
         self.tags = tags
+        self.isFavorite = isFavorite
+    }
+
+    /// URL-based kind, for the Library filter pills. There is no stored
+    /// kind field: a saved page is an image when its URL points at an
+    /// image file, and a file when it points at a document or is a
+    /// PageMind note (Morning Brief, Deep Research report).
+    var isImageURL: Bool {
+        let ext = URL(string: url)?.pathExtension.lowercased() ?? ""
+        return ["png", "jpg", "jpeg", "gif", "webp", "heic", "svg"].contains(ext)
+    }
+
+    var isFileURL: Bool {
+        if url.hasPrefix("pagemind://") { return true }
+        let ext = URL(string: url)?.pathExtension.lowercased() ?? ""
+        return ["pdf", "doc", "docx", "txt", "md", "csv", "zip", "epub"].contains(ext)
     }
 }
 
