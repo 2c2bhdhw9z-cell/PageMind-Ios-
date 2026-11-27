@@ -11,7 +11,14 @@ struct ChatView: View {
 
     @Query(sort: \SavedPage.savedAt, order: .reverse) private var savedPages: [SavedPage]
 
-    @StateObject private var viewModel = ChatViewModel()
+    /// The view model is owned by the app shell (AppShellView) so the
+    /// conversation survives switching to another sidebar destination
+    /// and back. `openChat` / `newChatNonce` are how the sidebar drives
+    /// this view: open a recent chat, or start a fresh one.
+    @ObservedObject private var viewModel: ChatViewModel
+    private let openChat: Chat?
+    private let newChatNonce: UUID
+
     @StateObject private var catalog = ModelCatalog()
 
     @State private var draft = ""
@@ -24,84 +31,93 @@ struct ChatView: View {
     @State private var showPhotoPicker = false
     @State private var photoPickerItems: [PhotosPickerItem] = []
     @State private var useWebSearch = false
-    @State private var isSearchingWeb = false
+    @State private var useWebFetch = false
+    /// What the chat is doing right now, shown above the composer while
+    /// a page is being fetched or a web search is running — the same
+    /// narration pattern SurfMind uses ("Reading…", "Searching…").
+    @State private var statusText: String?
     @State private var showSettingsSheet = false
+    @State private var showModelPicker = false
+    @State private var modelSearchText = ""
+
+    init(viewModel: ChatViewModel, openChat: Chat? = nil, newChatNonce: UUID = UUID()) {
+        self.viewModel = viewModel
+        self.openChat = openChat
+        self.newChatNonce = newChatNonce
+    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                messageList
+                if viewModel.messages.isEmpty {
+                    // Chat-first home: greeting, model picker, composer.
+                    homeView
+                } else {
+                    messageList
 
-                if let error = viewModel.errorMessage {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(error)
-                            .font(.footnote)
-                            .foregroundStyle(.red)
-                        if let hint = viewModel.errorHint {
-                            Text(hint)
+                    if let error = viewModel.errorMessage {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(error)
+                                .font(.footnote)
+                                .foregroundStyle(.red)
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
+                            if let hint = viewModel.errorHint {
+                                Text(hint)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(nil)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            if error.contains("No API key") || error.contains("401") {
+                                Button("Add or check the API key in Settings") {
+                                    showSettingsSheet = true
+                                }
+                                .font(.footnote)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        .padding(.vertical, 6)
+                    }
+
+                    if let statusText {
+                        HStack {
+                            ProgressView()
+                            Text(statusText)
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
+                                .lineLimit(nil)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        if error.contains("No API key") || error.contains("401") {
-                            Button("Add or check the API key in Settings") {
-                                showSettingsSheet = true
-                            }
-                            .font(.footnote)
-                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 4)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    .padding(.vertical, 6)
-                }
 
-                if isSearchingWeb {
-                    HStack {
-                        ProgressView()
-                        Text("Searching the web…")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 4)
+                    attachedPagesBar
+                    composer
                 }
-
-                attachedPagesBar
-                composer
             }
+            .background(PageMindDesign.appBackground)
             .navigationTitle(viewModel.currentChat?.title ?? "Chat")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
+                    SidebarToggleButton()
+                }
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        viewModel.newChat()
-                        attachedPages = []
-                        attachedPDFTexts = []
-                        attachedPDFNames = []
-                        attachedImages = []
+                        startNewChat()
                     } label: {
                         Label("New Chat", systemImage: "square.and.pencil")
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        ForEach(availableModels, id: \.self) { model in
-                            Button {
-                                viewModel.selectedModel = model
-                            } label: {
-                                if model == viewModel.selectedModel {
-                                    Label(model, systemImage: "checkmark")
-                                } else {
-                                    Text(model)
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(viewModel.selectedModel, systemImage: "chevron.down")
-                            .font(.footnote)
                     }
                 }
             }
             .sheet(isPresented: $showAttachSheet) {
                 attachPageSheet
+            }
+            .sheet(isPresented: $showModelPicker) {
+                modelPickerSheet
             }
             .fileImporter(
                 isPresented: $showPDFImporter,
@@ -126,9 +142,18 @@ struct ChatView: View {
             }
             .onAppear {
                 viewModel.configure(with: settings)
+                openRequestedChatIfNeeded()
                 Task {
                     _ = await catalog.fetchOpenRouterModels()
                 }
+            }
+            // Sidebar asked to open a recent chat.
+            .onChange(of: openChat?.id) { _, _ in
+                openRequestedChatIfNeeded()
+            }
+            // Sidebar asked for a brand-new chat.
+            .onChange(of: newChatNonce) { _, _ in
+                startNewChat()
             }
             // Reconfigure when the provider or model changes in Settings
             // (the view model holds its own provider + model copies).
@@ -150,9 +175,6 @@ struct ChatView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 12) {
-                    if viewModel.messages.isEmpty {
-                        emptyState
-                    }
                     ForEach(viewModel.messages) { message in
                         MessageRow(message: message)
                             .id(message.id)
@@ -179,30 +201,199 @@ struct ChatView: View {
         }
     }
 
-    private var emptyState: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Ask about a page, a PDF, a photo, or anything else.")
-                .font(.headline)
-            Text("Attach a saved page, turn on web search, or ask from the Browser tab and PageMind will use that page as context.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            HStack(spacing: 8) {
-                Button("Attach a saved page") { showAttachSheet = true }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                Button("Ask with web search") { useWebSearch = true }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-            }
-            if settings.apiKey(for: settings.selectedProvider) == nil
-                && settings.selectedProvider.requiresKey {
-                Button("Add an API key — or use OpenRouter free models") {
-                    showSettingsSheet = true
+    // MARK: - Chat home (empty state)
+
+    /// Time-aware greeting for the chat home.
+    private var greeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5..<12: return "Good morning"
+        case 12..<17: return "Good afternoon"
+        default: return "Good evening"
+        }
+    }
+
+    /// Chat-first home: greeting, model picker pill, quick actions,
+    /// and the same composer used once a conversation starts.
+    private var homeView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: PageMindDesign.rowSpacing) {
+                Spacer(minLength: 32)
+
+                Text(greeting)
+                    .font(.largeTitle.bold())
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("Ask about a page, a PDF, a photo, or anything else.")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                modelPickerPill
+
+                HStack(spacing: 8) {
+                    Button("Attach a saved page") { showAttachSheet = true }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                    Button("Ask with web search") { useWebSearch = true }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
                 }
-                .font(.footnote)
+
+                if settings.apiKey(for: settings.selectedProvider) == nil
+                    && settings.selectedProvider.requiresKey {
+                    Button("Add an API key — or use OpenRouter free models") {
+                        showSettingsSheet = true
+                    }
+                    .font(.footnote)
+                }
+
+                attachedPagesBar
+                composer
+
+                Spacer(minLength: 16)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+        }
+    }
+
+    /// Current-model pill. Tap opens the model list; picking a model
+    /// writes AppSettings.selectedModel, which reconfigures the chat.
+    private var modelPickerPill: some View {
+        Button { showModelPicker = true } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                Text(viewModel.selectedModel)
+                    .lineLimit(1)
+                Image(systemName: "chevron.down")
+                    .font(.caption)
+            }
+            .font(.subheadline)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(PageMindDesign.cardBackground)
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Model picker: search box, a Favorites section with a star toggle
+    /// per model (persisted in AppSettings), then the provider's models,
+    /// each with capability badges drawn from the provider data that
+    /// actually exists — "Free" for free models, "Vision" when the
+    /// current provider takes image input.
+    private var modelPickerSheet: some View {
+        NavigationStack {
+            List {
+                if !favoriteModels.isEmpty {
+                    Section("Favorites") {
+                        ForEach(favoriteModels, id: \.self) { model in
+                            modelRow(model)
+                        }
+                    }
+                }
+                Section {
+                    ForEach(filteredModels, id: \.self) { model in
+                        modelRow(model)
+                    }
+                } header: {
+                    Text(settings.selectedProvider.displayName)
+                } footer: {
+                    Text("Free models come from OpenRouter. The model you pick is used for the next reply. Vision means this provider accepts photo attachments — a text-only model still returns a provider error.")
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Section {
+                    Button("Refresh model list") {
+                        Task { _ = await catalog.fetchOpenRouterModels() }
+                    }
+                }
+            }
+            .searchable(text: $modelSearchText, prompt: "Search models")
+            .navigationTitle("Choose a model")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { showModelPicker = false }
+                }
             }
         }
-        .padding(.vertical, 24)
+    }
+
+    /// One model row: tap to select, star to favourite. The star is a
+    /// separate button so it never triggers the select action.
+    private func modelRow(_ model: String) -> some View {
+        HStack(spacing: 8) {
+            Button {
+                settings.selectedModel = model
+                showModelPicker = false
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(model)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                        HStack(spacing: 6) {
+                            if model == "openrouter/free" || model.hasSuffix(":free") {
+                                capabilityBadge("Free")
+                            }
+                            if viewModel.providerSupportsVision {
+                                capabilityBadge("Vision")
+                            }
+                        }
+                    }
+                    Spacer()
+                    if model == viewModel.selectedModel {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                settings.toggleFavoriteModel(model)
+            } label: {
+                Image(systemName: settings.favoriteModels.contains(model) ? "star.fill" : "star")
+                    .foregroundStyle(
+                        settings.favoriteModels.contains(model) ? .yellow : .secondary
+                    )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(
+                settings.favoriteModels.contains(model) ? "Remove \(model) from favorites" : "Add \(model) to favorites"
+            )
+        }
+    }
+
+    private func capabilityBadge(_ text: String) -> some View {
+        Text(text)
+            .font(.caption2)
+            .bold()
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.accentColor.opacity(0.15))
+            .foregroundStyle(Color.accentColor)
+            .clipShape(Capsule())
+    }
+
+    /// Starred models first (search-filtered when searching).
+    private var favoriteModels: [String] {
+        let favorites = availableModels.filter { settings.favoriteModels.contains($0) }
+        guard !modelSearchText.isEmpty else { return favorites }
+        return favorites.filter { $0.localizedCaseInsensitiveContains(modelSearchText) }
+    }
+
+    /// Non-favourite models, search-filtered when searching.
+    private var filteredModels: [String] {
+        var models = availableModels.filter { !settings.favoriteModels.contains($0) }
+        if !modelSearchText.isEmpty {
+            models = models.filter { $0.localizedCaseInsensitiveContains(modelSearchText) }
+        }
+        return models
     }
 
     // MARK: - Attached pages + composer
@@ -292,42 +483,88 @@ struct ChatView: View {
         }
     }
 
+    /// The composer's "+" menu: everything that can be added to a message
+    /// in one place, the way SurfMind organises it — photo, PDF file,
+    /// a page from the Library, and the per-message web search / web
+    /// fetch toggles. The toggles show a checkmark when on.
     private var composer: some View {
         VStack(spacing: 8) {
             HStack {
-                Toggle("Ask with web search", isOn: $useWebSearch)
-                    .font(.footnote)
-                    .toggleStyle(.switch)
+                Menu {
+                    Button {
+                        showPhotoPicker = true
+                    } label: {
+                        Label("Attach photo", systemImage: "photo")
+                    }
+                    .disabled(attachedImages.count >= VisionImagePrep.maxImagesPerChat)
+
+                    Button {
+                        showPDFImporter = true
+                    } label: {
+                        Label("Attach file (PDF)", systemImage: "doc.fill")
+                    }
+
+                    Button {
+                        showAttachSheet = true
+                    } label: {
+                        Label("Add from Library", systemImage: "books.vertical")
+                    }
+
+                    Divider()
+
+                    Toggle("Web search", isOn: $useWebSearch)
+                    Toggle("Web fetch", isOn: $useWebFetch)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title3)
+                        .frame(width: 36, height: 36)
+                        .background(Color.secondary.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .accessibilityLabel("Add to message")
+
+                if useWebSearch || useWebFetch {
+                    HStack(spacing: 4) {
+                        if useWebSearch {
+                            Text("Web search")
+                                .font(.caption2)
+                                .bold()
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(Color.accentColor.opacity(0.15))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(Capsule())
+                        }
+                        if useWebFetch {
+                            Text("Web fetch")
+                                .font(.caption2)
+                                .bold()
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(Color.accentColor.opacity(0.15))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .lineLimit(1)
+                }
+
                 Spacer()
-                Button {
-                    showAttachSheet = true
-                } label: {
-                    Label("Attach page", systemImage: "paperclip")
-                        .font(.footnote)
-                        .labelStyle(.iconOnly)
-                }
-                Button {
-                    showPDFImporter = true
-                } label: {
-                    Label("PDF", systemImage: "doc.fill")
-                        .font(.footnote)
-                        .labelStyle(.iconOnly)
-                }
-                Button {
-                    showPhotoPicker = true
-                } label: {
-                    Label("Photo", systemImage: "photo")
-                        .font(.footnote)
-                        .labelStyle(.iconOnly)
-                }
-                .disabled(attachedImages.count >= VisionImagePrep.maxImagesPerChat)
+
+                Text(viewModel.selectedModel)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             .padding(.horizontal)
 
             HStack(alignment: .bottom) {
-                TextField("Message…", text: $draft, axis: .vertical)
+                TextField("Ask PageMind anything…", text: $draft, axis: .vertical)
                     .lineLimit(1...5)
-                    .textFieldStyle(.roundedBorder)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(Color.secondary.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                     .disabled(viewModel.isStreaming)
 
                 if viewModel.isStreaming {
@@ -347,7 +584,6 @@ struct ChatView: View {
             .padding(.horizontal)
             .padding(.bottom, 8)
         }
-        .background(Color(.systemBackground))
     }
 
     // MARK: - Attach sheet
@@ -388,6 +624,23 @@ struct ChatView: View {
     }
 
     // MARK: - Actions
+
+    /// Clears the current conversation and any pending attachments.
+    /// Used by the toolbar button and by the sidebar's New chat.
+    private func startNewChat() {
+        viewModel.newChat()
+        attachedPages = []
+        attachedPDFTexts = []
+        attachedPDFNames = []
+        attachedImages = []
+    }
+
+    /// Binds the chat the sidebar asked for, if any and if it is not
+    /// already the open one. Called on appear and when `openChat` changes.
+    private func openRequestedChatIfNeeded() {
+        guard let chat = openChat, viewModel.currentChat?.id != chat.id else { return }
+        viewModel.bind(chat: chat, modelContext: modelContext)
+    }
 
     private var availableModels: [String] {
         // Live OpenRouter list when fetched, otherwise the free fallback list.
@@ -452,30 +705,80 @@ struct ChatView: View {
             viewModel.bind(chat: chat, modelContext: modelContext)
         }
 
-        if useWebSearch {
-            isSearchingWeb = true
-            Task {
-                let results = await WebSearchService().search(
+        // Web fetch and web search both run before the reply, with a
+        // status line above the composer narrating each step. The fetch
+        // reads the first http(s) URL in the message and attaches its
+        // readable text as context; with no URL in the message it does
+        // nothing. Failures are silent — the chat proceeds without the
+        // extra context instead of erroring out.
+        Task {
+            var fetchedTexts: [String] = []
+            if useWebFetch, let url = Self.firstURL(in: prompt) {
+                statusText = "Fetching \(url.host ?? url.absoluteString)…"
+                if let text = await Self.fetchPageText(url: url) {
+                    fetchedTexts.append(text)
+                }
+                statusText = nil
+            }
+
+            var webResults: [SourceCitation] = []
+            if useWebSearch {
+                statusText = "Searching the web…"
+                webResults = await WebSearchService().search(
                     query: prompt,
                     braveAPIKey: settings.braveAPIKey
                 )
-                isSearchingWeb = false
-                viewModel.send(
-                    prompt: prompt,
-                    contextPages: attachedPages,
-                    attachments: attachedPDFTexts,
-                    webSearchResults: results,
-                    imageAttachments: attachedImages
-                )
+                statusText = nil
             }
-        } else {
+
             viewModel.send(
                 prompt: prompt,
                 contextPages: attachedPages,
-                attachments: attachedPDFTexts,
+                attachments: attachedPDFTexts + fetchedTexts,
+                webSearchResults: webResults,
                 imageAttachments: attachedImages
             )
         }
+    }
+
+    /// The first http(s) URL in a message, if any. Trailing punctuation
+    /// (periods, commas, closing brackets) is stripped so a URL at the
+    /// end of a sentence still parses.
+    private static func firstURL(in text: String) -> URL? {
+        for token in text.split(separator: " ") {
+            var candidate = String(token)
+            while let last = candidate.last, ".,;:!?)]}".contains(last) {
+                candidate.removeLast()
+            }
+            guard candidate.hasPrefix("http://") || candidate.hasPrefix("https://"),
+                  let url = URL(string: candidate),
+                  url.host != nil else { continue }
+            return url
+        }
+        return nil
+    }
+
+    /// Fetches a page over URLSession and extracts its readable text with
+    /// the same Swift fallback the Reader uses. Returns nil on any
+    /// failure (network, non-HTML, empty text) — the caller proceeds
+    /// without the fetched context.
+    private static func fetchPageText(url: URL) async -> String? {
+        var request = URLRequest(url: url)
+        request.setValue(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+            forHTTPHeaderField: "User-Agent"
+        )
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              let httpResponse = response as? HTTPURLResponse,
+              (200..<300).contains(httpResponse.statusCode),
+              let html = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+        let extracted = ReaderExtractor.extractReaderText(html: html)
+        let text = extracted.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return nil }
+        let title = extracted.title.isEmpty ? url.host ?? url.absoluteString : extracted.title
+        return "Fetched page \"\(title)\" (\(url.absoluteString)):\n\(String(text.prefix(6000)))"
     }
 }
 
