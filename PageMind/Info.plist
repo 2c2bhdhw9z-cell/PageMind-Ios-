@@ -55,6 +55,12 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Required: without a launch screen iOS runs the app in legacy
+	     320x480 (3.5-inch) mode, letterboxed with black bars top and
+	     bottom (seen on the owner's iPhone, 2026-11-26). An empty dict
+	     is the SwiftUI launch screen. -->
+	<key>UILaunchScreen</key>
+	<dict/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
