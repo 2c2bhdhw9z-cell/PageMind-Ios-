@@ -59,7 +59,12 @@ struct LibraryView: View {
                     } else {
                         List {
                             ForEach(filteredPages) { page in
-                                HStack(alignment: .top, spacing: 8) {
+                                HStack(alignment: .top, spacing: 10) {
+                                    IconChip(
+                                        systemImage: page.isImageURL ? "photo" : page.isFileURL ? "doc.fill" : "globe",
+                                        tint: PageMindDesign.brandIndigo.opacity(0.85)
+                                    )
+
                                     Button { selectedPage = page } label: {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(page.title)
@@ -100,6 +105,9 @@ struct LibraryView: View {
                                 }
                             }
                         }
+                        .listStyle(.insetGrouped)
+                        .scrollContentBackground(.hidden)
+                        .background(PageMindDesign.appBackground)
                     }
                 }
             }
@@ -144,8 +152,8 @@ struct LibraryView: View {
                             .padding(.vertical, 7)
                             .background(
                                 filter == pill
-                                    ? Color.accentColor
-                                    : Color.secondary.opacity(0.12)
+                                    ? AnyShapeStyle(PageMindDesign.brandGradient)
+                                    : AnyShapeStyle(PageMindDesign.elevatedCard)
                             )
                             .foregroundStyle(
                                 filter == pill ? Color.white : Color.primary
