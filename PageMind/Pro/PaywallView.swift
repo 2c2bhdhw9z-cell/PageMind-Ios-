@@ -22,16 +22,29 @@ struct PaywallView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("PageMind Pro")
-                        .font(.largeTitle.bold())
-                    Text("For readers who want PageMind to do more of the work.")
-                        .foregroundStyle(.secondary)
+                    // Gradient hero: the paywall's designed anchor.
+                    VStack(alignment: .leading, spacing: 8) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 52, height: 52)
+                            .background(Color.white.opacity(0.2))
+                            .clipShape(RoundedRectangle(cornerRadius: 15))
+                        Text("PageMind Pro")
+                            .font(.largeTitle.bold())
+                            .foregroundStyle(.white)
+                        Text("For readers who want PageMind to do more of the work.")
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(20)
+                    .background(PageMindDesign.brandGradient)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .shadow(color: PageMindDesign.brandIndigo.opacity(0.35), radius: 16, x: 0, y: 6)
 
                     ForEach(features, id: \.1) { icon, title, detail in
                         HStack(alignment: .top, spacing: 12) {
-                            Image(systemName: icon)
-                                .foregroundStyle(Color.accentColor)
-                                .frame(width: 24)
+                            IconChip(systemImage: icon)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(title).font(.headline)
                                 Text(detail).font(.subheadline).foregroundStyle(.secondary)
@@ -45,7 +58,7 @@ struct PaywallView: View {
                             .foregroundStyle(.secondary)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.secondary.opacity(0.1))
+                            .background(PageMindDesign.elevatedCard)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     } else {
                         VStack(spacing: 12) {
@@ -53,15 +66,27 @@ struct PaywallView: View {
                                 Button("Monthly — \(monthly.displayPrice) / month") {
                                     Task { await store.purchase(monthly) }
                                 }
-                                .buttonStyle(.borderedProminent)
+                                .font(.headline)
+                                .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(PageMindDesign.brandGradient)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
                             }
                             if let lifetime = store.lifetimeProduct {
                                 Button("Lifetime — \(lifetime.displayPrice) (launch price $19.99)") {
                                     Task { await store.purchase(lifetime) }
                                 }
-                                .buttonStyle(.bordered)
+                                .font(.headline)
+                                .foregroundStyle(PageMindDesign.brandIndigo)
                                 .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(PageMindDesign.elevatedCard)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(PageMindDesign.brandIndigo.opacity(0.4), lineWidth: 1)
+                                )
                             }
                         }
                     }
@@ -69,6 +94,7 @@ struct PaywallView: View {
                     Button("Restore purchases") {
                         Task { await store.restore() }
                     }
+                    .foregroundStyle(PageMindDesign.brandIndigo)
                     .frame(maxWidth: .infinity)
 
                     if let error = store.errorMessage {
