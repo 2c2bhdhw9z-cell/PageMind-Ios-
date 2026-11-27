@@ -271,6 +271,7 @@ enum MorningBriefScheduler {
         }
     }
 
+    @MainActor
     private static func postReadyNotification() {
         // The Settings → General toggle gates this: with notifications
         // off, the brief still saves — it just doesn't notify.
