@@ -35,28 +35,38 @@ struct SearchView: View {
                 } else {
                     List {
                         ForEach(results) { page in
-                            Button { selectedPage = page } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(page.title.isEmpty ? page.url : page.title)
-                                        .font(.headline)
-                                        .lineLimit(2)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                    if !page.excerpt.isEmpty {
-                                        Text(page.excerpt)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
+                            HStack(alignment: .top, spacing: 10) {
+                                IconChip(
+                                    systemImage: page.isImageURL ? "photo" : page.isFileURL ? "doc.fill" : "globe",
+                                    tint: PageMindDesign.brandIndigo.opacity(0.85)
+                                )
+
+                                Button { selectedPage = page } label: {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(page.title.isEmpty ? page.url : page.title)
+                                            .font(.headline)
                                             .lineLimit(2)
                                             .fixedSize(horizontal: false, vertical: true)
+                                        if !page.excerpt.isEmpty {
+                                            Text(page.excerpt)
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                                .lineLimit(2)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
+                                        Text(page.savedAt, style: .date)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(1)
                                     }
-                                    Text(page.savedAt, style: .date)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
                     }
+                    .listStyle(.insetGrouped)
+                    .scrollContentBackground(.hidden)
+                    .background(PageMindDesign.appBackground)
                 }
             }
             .navigationTitle("Search")
