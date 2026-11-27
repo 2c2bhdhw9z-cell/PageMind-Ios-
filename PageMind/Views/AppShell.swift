@@ -160,7 +160,9 @@ struct AppShellView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 // Dimmed backdrop: tap anywhere outside the drawer to close it.
-                Color.black.opacity(shell.isDrawerOpen ? 0.35 : 0)
+                // Dark enough that the detail behind reads as dimmed, not
+                // as text showing through next to the drawer.
+                Color.black.opacity(shell.isDrawerOpen ? 0.55 : 0)
                     .ignoresSafeArea()
                     .allowsHitTesting(shell.isDrawerOpen)
                     .onTapGesture {
@@ -366,7 +368,7 @@ struct SidebarView: View {
                         }
                     }
                 }
-                .padding(.bottom, 12)
+                .padding(.bottom, 24)
             }
 
             Divider()
