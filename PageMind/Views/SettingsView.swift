@@ -45,10 +45,23 @@ struct SettingsView: View {
                     HStack {
                         Text("PageMind Pro")
                         Spacer()
-                        Button(store.isPro ? "Pro active" : "Get Pro") {
-                            showingPaywall = true
+                        if store.isPro {
+                            Text("Pro active")
+                                .font(.subheadline)
+                                .bold()
+                                .foregroundStyle(PageMindDesign.brandIndigo)
+                        } else {
+                            Button("Get Pro") {
+                                showingPaywall = true
+                            }
+                            .font(.subheadline)
+                            .bold()
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 7)
+                            .background(PageMindDesign.brandGradient)
+                            .clipShape(Capsule())
                         }
-                        .disabled(store.isPro)
                     }
 
                     Button("Export settings and chats") {
@@ -306,7 +319,7 @@ struct SettingsView: View {
                 Spacer()
                 if settings.activeSkillPreset?.id == preset.id {
                     Image(systemName: "checkmark")
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(PageMindDesign.brandIndigo)
                 }
             }
         }
