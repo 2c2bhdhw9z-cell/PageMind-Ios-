@@ -125,6 +125,7 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .safeAreaPadding(.bottom, 16)
             .onChange(of: settings.selectedProviderRaw) { _, newValue in
                 // Changing provider resets the model to that provider's
                 // default — the old model id belongs to the old provider
