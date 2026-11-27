@@ -34,6 +34,7 @@ struct BrowserView: View {
                 if progress > 0 && progress < 1 {
                     ProgressView(value: progress)
                         .progressViewStyle(.linear)
+                        .tint(PageMindDesign.brandIndigo)
                 }
 
                 WebViewContainer(
@@ -88,11 +89,16 @@ struct BrowserView: View {
     // MARK: - Bars
 
     private var addressBar: some View {
-        HStack {
+        HStack(spacing: 8) {
             Button {
                 webViewHolder.webView?.goBack()
             } label: {
                 Image(systemName: "chevron.left")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(canGoBack ? PageMindDesign.primaryText : .secondary)
+                    .frame(width: 34, height: 34)
+                    .background(PageMindDesign.elevatedCard)
+                    .clipShape(Circle())
             }
             .disabled(!canGoBack)
 
@@ -100,72 +106,102 @@ struct BrowserView: View {
                 webViewHolder.webView?.goForward()
             } label: {
                 Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(canGoForward ? PageMindDesign.primaryText : .secondary)
+                    .frame(width: 34, height: 34)
+                    .background(PageMindDesign.elevatedCard)
+                    .clipShape(Circle())
             }
             .disabled(!canGoForward)
 
             TextField("Enter URL or search", text: $addressText, onCommit: go)
-                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(PageMindDesign.elevatedCard)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                )
                 .autocapitalization(.none)
                 .autocorrectionDisabled()
                 .keyboardType(.URL)
 
             Button("Go") { go() }
+                .font(.subheadline)
+                .bold()
+                .foregroundStyle(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(PageMindDesign.brandGradient)
+                .clipShape(Capsule())
         }
         .padding(.horizontal)
         .padding(.vertical, 6)
     }
 
     private var actionBar: some View {
-        HStack(spacing: 12) {
-            Button {
-                isReaderMode.toggle()
-                if isReaderMode {
-                    extractReaderText { showReaderSheet = true }
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                actionChip("Reader", systemImage: isReaderMode ? "doc.text.fill" : "doc.text") {
+                    isReaderMode.toggle()
+                    if isReaderMode {
+                        extractReaderText { showReaderSheet = true }
+                    }
                 }
-            } label: {
-                Label("Reader", systemImage: isReaderMode ? "doc.text.fill" : "doc.text")
-                    .lineLimit(1)
-            }
 
-            Button {
-                saveCurrentPage()
-            } label: {
-                Label("Save page", systemImage: "bookmark")
-                    .lineLimit(1)
-            }
+                actionChip("Save page", systemImage: "bookmark") {
+                    saveCurrentPage()
+                }
 
-            Button {
-                askAboutCurrentPage()
-            } label: {
-                Label("Ask", systemImage: "message")
-                    .lineLimit(1)
-            }
-            .disabled(isLoading)
+                actionChip("Ask", systemImage: "message") {
+                    askAboutCurrentPage()
+                }
+                .disabled(isLoading)
 
-            if isYouTubePage {
+                if isYouTubePage {
+                    actionChip("Transcript", systemImage: "captions.bubble") {
+                        fetchYouTubeTranscript()
+                    }
+                    .disabled(isLoading || isFetchingTranscript)
+                }
+
+                // The Agent is the Pro hero action: gradient chip, white text.
                 Button {
-                    fetchYouTubeTranscript()
+                    if store.isPro {
+                        showAgentSheet = true
+                    } else {
+                        showPaywallSheet = true
+                    }
                 } label: {
-                    Label("Transcript", systemImage: "captions.bubble")
+                    Label("Agent", systemImage: "wand.and.stars")
                         .lineLimit(1)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(PageMindDesign.brandGradient)
+                        .foregroundStyle(.white)
+                        .clipShape(Capsule())
                 }
-                .disabled(isLoading || isFetchingTranscript)
+                .buttonStyle(.plain)
             }
-
-            Button {
-                if store.isPro {
-                    showAgentSheet = true
-                } else {
-                    showPaywallSheet = true
-                }
-            } label: {
-                Label("Agent", systemImage: "wand.and.stars")
-                    .lineLimit(1)
-            }
+            .padding(.horizontal)
         }
         .font(.footnote)
-        .padding(.horizontal)
         .padding(.vertical, 8)
+    }
+
+    /// One action-bar chip: icon + label on the elevated card surface.
+    private func actionChip(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .lineLimit(1)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(PageMindDesign.elevatedCard)
+                .foregroundStyle(PageMindDesign.primaryText)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     /// Whether the current page is a YouTube video (transcript button).
