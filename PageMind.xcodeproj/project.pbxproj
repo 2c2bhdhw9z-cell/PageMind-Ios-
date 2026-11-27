@@ -12,6 +12,7 @@
 		0632F2FEE50DF8A9D396CAA9 /* BrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9CC69C573B879BBCA4719C /* BrowserView.swift */; };
 		09F5148EA225CF0233AF616D /* ProGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494AAE050C7757E66A251E1 /* ProGate.swift */; };
 		0A443655CB2113D1A501C28C /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = 51DB3411398C7251745917F0 /* popup.html */; };
+		0EC14A8CBB3FAB60409F1FE7 /* AppShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFB44D181364F027ED8C6F8 /* AppShell.swift */; };
 		1048F177C44E3CE41C0C40CF /* Info.plist in None */ = {isa = PBXBuildFile; fileRef = 0DC5695A3DD5D51400BC4B6D /* Info.plist */; };
 		12530181DD98150199A8619B /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4312BA3F973D555D01C85BA /* SafariWebExtensionHandler.swift */; };
 		12FE94692D0FF98ECAC3F30C /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE22371C63BCE155362DFE9A /* StoreManager.swift */; };
@@ -58,6 +59,7 @@
 		DDA3F45CD688C77D614182CC /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D61F4D7FC7B021397CF32A1 /* PaywallView.swift */; };
 		E7817839685DD7B21BEEE4E9 /* Providers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BFC55F1EB41BF00E61033F4 /* Providers.swift */; };
 		EB98D86CD8A6D73F54017DE0 /* ProFeatures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33A818B3A199A2CF3925BF79 /* ProFeatures.swift */; };
+		ED574352A6F3E208D46474BC /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB9A4B06894073212827068F /* SearchView.swift */; };
 		F57F2D48331A31AF03D4A706 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B2FD511F7F08702488C934D5 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -123,6 +125,7 @@
 		3494AAE050C7757E66A251E1 /* ProGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProGate.swift; path = PageMind/Pro/ProGate.swift; sourceTree = "<group>"; };
 		34D48E0780AE1E8B7361F58D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = PageMind/Assets.xcassets; sourceTree = "<group>"; };
 		47F5ACC78A11600856EB7D4E /* WebMemorySearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WebMemorySearchTests.swift; path = PageMindTests/WebMemorySearchTests.swift; sourceTree = "<group>"; };
+		4BFB44D181364F027ED8C6F8 /* AppShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppShell.swift; path = PageMind/Views/AppShell.swift; sourceTree = SOURCE_ROOT; };
 		4CA33E3ED5EDC58E3C92C051 /* PageMindTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PageMindTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DBF6552B02E39008A10FD9C /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatViewModel.swift; path = PageMind/AI/ChatViewModel.swift; sourceTree = "<group>"; };
 		4E726524F53D0416D7DBFF97 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LibraryView.swift; path = PageMind/Views/LibraryView.swift; sourceTree = "<group>"; };
@@ -156,6 +159,7 @@
 		CE5A2F47A669EF04E4CC30DE /* BrowserAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BrowserAgent.swift; path = PageMind/Pro/BrowserAgent.swift; sourceTree = "<group>"; };
 		D04F3E5FDBDD56A7990C1468 /* ReaderExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReaderExtractor.swift; path = PageMind/Reader/ReaderExtractor.swift; sourceTree = "<group>"; };
 		D8C95C3F83AB130F12289624 /* PageMindWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PageMindWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB9A4B06894073212827068F /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SearchView.swift; path = PageMind/Views/SearchView.swift; sourceTree = SOURCE_ROOT; };
 		E1BB37E54AD0E93E5B42DCA8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = PageMindWidgets/Info.plist; sourceTree = "<group>"; };
 		E4521E17E77B10E8F967FFDA /* DeepResearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeepResearch.swift; path = PageMind/Pro/DeepResearch.swift; sourceTree = "<group>"; };
 		EB3C7656D03CA66983300EA9 /* YouTubeTranscript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = YouTubeTranscript.swift; path = PageMind/Search/YouTubeTranscript.swift; sourceTree = "<group>"; };
@@ -247,6 +251,8 @@
 				708AA2E3A7E2A81D24C8CE05 /* PageMindSafari */,
 				5041748161F761242C0B3EAE /* PageMindWidgets */,
 				2F3A6B1E78F896718625FF06 /* Products */,
+				4BFB44D181364F027ED8C6F8 /* AppShell.swift */,
+				DB9A4B06894073212827068F /* SearchView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -565,6 +571,8 @@
 				00C2155187A717622C2EFDE0 /* LibraryView.swift in Sources */,
 				265DE53C79D49716EECC3FA7 /* OnboardingView.swift in Sources */,
 				042C62E956F23E526DF105B1 /* SettingsView.swift in Sources */,
+				0EC14A8CBB3FAB60409F1FE7 /* AppShell.swift in Sources */,
+				ED574352A6F3E208D46474BC /* SearchView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
