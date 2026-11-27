@@ -65,6 +65,11 @@ struct BrowserView: View {
             }
             .navigationTitle("Browser")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    SidebarToggleButton()
+                }
+            }
             .sheet(isPresented: $showReaderSheet) {
                 readerSheet
             }
