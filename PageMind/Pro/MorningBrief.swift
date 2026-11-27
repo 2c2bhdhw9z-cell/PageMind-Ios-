@@ -18,6 +18,10 @@ final class MorningBriefSettings: ObservableObject {
     @AppStorage("briefIncludeSavedPages") var includeSavedPages = true
     /// When the last brief was generated (0 = never).
     @AppStorage("briefLastGenerated") var lastGeneratedTimestamp: Double = 0
+    /// Whether the "brief is ready" local notification is posted when a
+    /// background brief is saved. Off means the brief still generates and
+    /// saves — it just doesn't notify. Toggled in Settings → General.
+    @AppStorage("briefNotify") var notificationsEnabled = true
 
     var lastGenerated: Date? {
         lastGeneratedTimestamp > 0 ? Date(timeIntervalSince1970: lastGeneratedTimestamp) : nil
@@ -268,6 +272,9 @@ enum MorningBriefScheduler {
     }
 
     private static func postReadyNotification() {
+        // The Settings → General toggle gates this: with notifications
+        // off, the brief still saves — it just doesn't notify.
+        guard MorningBriefSettings().notificationsEnabled else { return }
         let content = UNMutableNotificationContent()
         content.title = "Your Morning Brief is ready"
         content.body = "Open PageMind to read it."
