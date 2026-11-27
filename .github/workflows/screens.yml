@@ -59,6 +59,14 @@ jobs:
             xcrun simctl launch "$UDID" com.pagemind.app -uiShot "$screen"
             sleep "$wait"
             xcrun simctl io "$UDID" screenshot "shots/$name.png"
+            # A plain black picture (about 73 KB) means the app had not
+            # drawn yet, or died. Check it is alive, wait, and retake.
+            if [ "$(stat -f%z "shots/$name.png")" -lt 90000 ]; then
+              echo "::warning::$name looked black; app processes:"
+              xcrun simctl spawn "$UDID" launchctl list | grep -i pagemind || echo "PageMind is NOT running"
+              sleep 10
+              xcrun simctl io "$UDID" screenshot "shots/$name.png"
+            fi
           }
           # Warm-up: the first launch after boot is slow and the first
           # picture came out black (still on the launch screen).
@@ -79,6 +87,9 @@ jobs:
           shot 12-compare compare
           shot 13-brief brief
           ls -la shots
+          mkdir -p shots/crashes
+          cp ~/Library/Logs/DiagnosticReports/PageMind* shots/crashes/ 2>/dev/null || echo "No PageMind crash reports"
+          ls -la shots/crashes
 
       - name: Make contact sheets
         run: |
@@ -86,7 +97,7 @@ jobs:
           python3 - <<'EOF'
           import glob
           from PIL import Image, ImageDraw
-          files = sorted(glob.glob('shots/*.png'))
+          files = sorted(glob.glob('shots/[0-9]*.png'))
           width = 390
           per_sheet = 4
           for start in range(0, len(files), per_sheet):

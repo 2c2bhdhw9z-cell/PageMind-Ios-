@@ -7,8 +7,9 @@ struct BrowserView: View {
     @EnvironmentObject private var pageContext: PageContextStore
 
     @State private var addressText = ""
-    /// Opens on DuckDuckGo, the same search PageMind's web search uses.
-    @State private var currentURL: URL? = URL(string: "https://duckduckgo.com")
+    /// nil = PageMind's own start page. (It used to open on example.com,
+    /// and DuckDuckGo's home page shows an ad for its own browser.)
+    @State private var currentURL: URL?
     @State private var progress: Double = 0
     @State private var isLoading = false
     @State private var canGoBack = false
@@ -27,6 +28,8 @@ struct BrowserView: View {
     @StateObject private var agent = BrowserAgent()
     @StateObject private var store = StoreManager.shared
 
+    @Query(sort: \SavedPage.savedAt, order: .reverse) private var savedPages: [SavedPage]
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -39,32 +42,36 @@ struct BrowserView: View {
                         .tint(PageMindDesign.brandIndigo)
                 }
 
-                WebViewContainer(
-                    holder: webViewHolder,
-                    url: currentURL,
-                    navigateRequestID: navigateRequestID,
-                    onWebViewCreated: { webView in
-                        agent.webView = webView
-                    },
-                    onProgress: { progress = $0 },
-                    onLoadingChange: { isLoading = $0 },
-                    onNavigationChange: { back, forward, url in
-                        canGoBack = back
-                        canGoForward = forward
-                        if let url {
-                            addressText = url.absoluteString
+                if currentURL == nil {
+                    startPage
+                } else {
+                    WebViewContainer(
+                        holder: webViewHolder,
+                        url: currentURL,
+                        navigateRequestID: navigateRequestID,
+                        onWebViewCreated: { webView in
+                            agent.webView = webView
+                        },
+                        onProgress: { progress = $0 },
+                        onLoadingChange: { isLoading = $0 },
+                        onNavigationChange: { back, forward, url in
+                            canGoBack = back
+                            canGoForward = forward
+                            if let url {
+                                addressText = url.absoluteString
+                            }
                         }
+                    )
+
+                    if let statusMessage {
+                        Text(statusMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.vertical, 4)
                     }
-                )
 
-                if let statusMessage {
-                    Text(statusMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, 4)
+                    actionBar
                 }
-
-                actionBar
             }
             .background(PageMindDesign.appBackground.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
@@ -81,6 +88,109 @@ struct BrowserView: View {
                 PaywallView()
             }
         }
+    }
+
+    // MARK: - Start page
+
+    /// Shown before any page is open: what the Browser does, a few
+    /// places to start, and the most recent saved pages.
+    private var startPage: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 22) {
+                VStack(spacing: 10) {
+                    BrandMark(size: 52)
+                    Text("Browse with PageMind")
+                        .font(.title2.weight(.semibold))
+                    Text("Open any page, then tap Ask to chat about it, Reader for a clean view, or Save page to keep it in your Library.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 28)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Start somewhere")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    FlowLayout(spacing: 8, lineSpacing: 8) {
+                        startLink("Wikipedia", systemImage: "book", url: "https://en.m.wikipedia.org")
+                        startLink("YouTube", systemImage: "play.rectangle", url: "https://m.youtube.com")
+                        startLink("BBC News", systemImage: "newspaper", url: "https://www.bbc.com/news")
+                        startLink("Reddit", systemImage: "bubble.left.and.bubble.right", url: "https://www.reddit.com")
+                    }
+                }
+
+                if !savedPages.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Recently saved")
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(.secondary)
+                        VStack(spacing: 0) {
+                            ForEach(Array(savedPages.prefix(4))) { page in
+                                Button {
+                                    openAddress(page.url)
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        IconChip(systemImage: "globe")
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(page.title.isEmpty ? page.url : page.title)
+                                                .font(.subheadline)
+                                                .foregroundStyle(PageMindDesign.primaryText)
+                                                .lineLimit(1)
+                                            Text(URL(string: page.url)?.host ?? page.url)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                                .lineLimit(1)
+                                        }
+                                        Spacer(minLength: 0)
+                                    }
+                                    .padding(.vertical, 8)
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(PageMindDesign.elevatedCard)
+                        )
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func startLink(_ title: String, systemImage: String, url: String) -> some View {
+        Button {
+            openAddress(url)
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 13))
+                    .foregroundStyle(PageMindDesign.brandIndigo)
+                Text(title)
+            }
+            .font(.subheadline)
+            .foregroundStyle(PageMindDesign.primaryText)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Capsule().fill(PageMindDesign.elevatedCard))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func openAddress(_ urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        addressText = urlString
+        currentURL = url
+        navigateRequestID = UUID()
     }
 
     // MARK: - Bars
@@ -245,7 +355,7 @@ struct BrowserView: View {
         } else {
             // Plain words: run a web search instead of guessing a host.
             let query = input.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-            urlString = "https://html.duckduckgo.com/html/?q=\(query)"
+            urlString = "https://duckduckgo.com/?q=\(query)"
         }
         guard let url = URL(string: urlString) else { return }
         currentURL = url
