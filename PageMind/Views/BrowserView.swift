@@ -111,7 +111,7 @@ struct BrowserView: View {
     }
 
     private var actionBar: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             Button {
                 isReaderMode.toggle()
                 if isReaderMode {
@@ -119,18 +119,21 @@ struct BrowserView: View {
                 }
             } label: {
                 Label("Reader", systemImage: isReaderMode ? "doc.text.fill" : "doc.text")
+                    .lineLimit(1)
             }
 
             Button {
                 saveCurrentPage()
             } label: {
                 Label("Save page", systemImage: "bookmark")
+                    .lineLimit(1)
             }
 
             Button {
                 askAboutCurrentPage()
             } label: {
-                Label("Ask about this page", systemImage: "message")
+                Label("Ask", systemImage: "message")
+                    .lineLimit(1)
             }
             .disabled(isLoading)
 
@@ -139,6 +142,7 @@ struct BrowserView: View {
                     fetchYouTubeTranscript()
                 } label: {
                     Label("Transcript", systemImage: "captions.bubble")
+                        .lineLimit(1)
                 }
                 .disabled(isLoading || isFetchingTranscript)
             }
@@ -151,10 +155,12 @@ struct BrowserView: View {
                 }
             } label: {
                 Label("Agent", systemImage: "wand.and.stars")
+                    .lineLimit(1)
             }
         }
         .font(.footnote)
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, 8)
     }
 
     /// Whether the current page is a YouTube video (transcript button).
